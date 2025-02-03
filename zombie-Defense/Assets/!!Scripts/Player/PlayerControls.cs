@@ -80,6 +80,9 @@ public class PlayerControls : MonoBehaviour
 
     private void OnShoot(InputAction.CallbackContext context)
     {
+        if(GameStateManager.CurrentState == GameStateManager.GameState.Building){
+            return;
+        }
         Shoot();
     }
 

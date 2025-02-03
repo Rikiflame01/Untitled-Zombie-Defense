@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 4810735945184063453}
   - component: {fileID: 7215080564021397998}
   - component: {fileID: 647993928798396664}
+  - component: {fileID: -4372457154231110640}
   m_Layer: 0
   m_Name: DamagePrefab
   m_TagString: Untagged
@@ -102,6 +103,22 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &-4372457154231110640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1159179087703213061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d8b1b129a015d34f92fd85f8f0303de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  floatSpeed: 5
+  lifetime: 1
+  wiggleSpeed: 30
+  wiggleAmount: 0.5
 --- !u!1 &7750383723684565859
 GameObject:
   m_ObjectHideFlags: 0
@@ -176,8 +193,8 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+    rgba: 4294902011
+  m_fontColor: {r: 0.98516464, g: 0, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
