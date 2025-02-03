@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 7985506949572520720}
   - component: {fileID: 7449624313028438063}
   - component: {fileID: 4018135834870600387}
+  - component: {fileID: 7494937303766979953}
   m_Layer: 0
   m_Name: HealthCanvas
   m_TagString: Untagged
@@ -102,6 +103,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &7494937303766979953
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2840277695106897084}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16badd590d8850249bcc0205cdd62f40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
 --- !u!1 &4849739356744393179
 GameObject:
   m_ObjectHideFlags: 0
@@ -207,7 +221,8 @@ GameObject:
   - component: {fileID: 6650681004104469037}
   - component: {fileID: 461107119827505364}
   - component: {fileID: 272983475283244016}
-  - component: {fileID: 5241220675611152093}
+  - component: {fileID: 8481740042734213253}
+  - component: {fileID: 6161652670339177152}
   m_Layer: 0
   m_Name: Enemy
   m_TagString: Untagged
@@ -337,8 +352,8 @@ Rigidbody:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 5670787948147071896}
   serializedVersion: 4
-  m_Mass: 1
-  m_Drag: 0
+  m_Mass: 100
+  m_Drag: 1
   m_AngularDrag: 0.05
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
@@ -369,7 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 0}
-  detectionRange: 10
+  detectionRange: 50
   moveSpeed: 3.5
   stoppingDistance: 2
   attackRange: 2
@@ -380,7 +395,7 @@ MonoBehaviour:
   playerLayer:
     serializedVersion: 2
     m_Bits: 128
---- !u!114 &5241220675611152093
+--- !u!114 &8481740042734213253
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -389,10 +404,31 @@ MonoBehaviour:
   m_GameObject: {fileID: 5670787948147071896}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 16badd590d8850249bcc0205cdd62f40, type: 3}
+  m_Script: {fileID: 11500000, guid: bf6d04381009e4545ba38f95fef9e179, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  targetCamera: {fileID: 0}
+  entityStats: {fileID: 11400000, guid: cbb5d2480800dbb4da9e0938a56563ef, type: 2}
+  floatingDamagePrefab: {fileID: 1159179087703213061, guid: 7625f2793d458e643832f6938a2caf29, type: 3}
+--- !u!114 &6161652670339177152
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5670787948147071896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a135c794e34f7f04da05007b69a8ac15, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  healthSlider: {fileID: 5651590249352625804}
+  fillImage: {fileID: 4164352096376997116}
+  healthBarColor: {r: 0, g: 1, b: 0.08776283, a: 1}
+  flashColor: {r: 1, g: 1, b: 1, a: 1}
+  flashDuration: 0.2
+  lerpSpeed: 2
+  pulseScale: 1.2
+  pulseSpeed: 5
 --- !u!1 &7655029263325392180
 GameObject:
   m_ObjectHideFlags: 0

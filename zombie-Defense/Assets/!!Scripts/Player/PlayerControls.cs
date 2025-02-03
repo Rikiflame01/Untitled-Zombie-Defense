@@ -6,11 +6,12 @@ public class PlayerControls : MonoBehaviour
 {
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 5f;
+    
     [Header("Shooting Settings")]
     [SerializeField] private Transform shootingPoint;
-    [SerializeField] private GameObject bulletPrefab;
+    [SerializeField] private string bulletPoolTag = "Bullet";
     [SerializeField] private float bulletSpeed = 10f;
-    [SerializeField] private float shootingDistance = 1.5f;
+    [SerializeField] private float shootRadius = 1.5f; 
 
     private InputSystem_Actions _inputActions;
     private CharacterController _characterController;
@@ -47,23 +48,34 @@ public class PlayerControls : MonoBehaviour
     {
         Vector3 move = new Vector3(_moveInput.x, 0f, _moveInput.y);
         _characterController.Move(move * (moveSpeed * Time.deltaTime));
-
-        RotateShootingPoint();
+        UpdateShootingPoint();
     }
-    private void RotateShootingPoint()
+    
+    private void UpdateShootingPoint()
     {
+        if (Camera.main == null || Mouse.current == null) return;
+
+        Vector3 direction;
         Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
         RaycastHit hit;
         int groundLayerMask = LayerMask.GetMask("Ground");
 
         if (Physics.Raycast(ray, out hit, Mathf.Infinity, groundLayerMask))
         {
-            Vector3 direction = (hit.point - transform.position).normalized;
-            direction.y = 0;
-            
-            shootingPoint.position = transform.position + direction * shootingDistance;
-            shootingPoint.rotation = Quaternion.LookRotation(direction);
+            direction = (hit.point - transform.position).normalized;
         }
+        else
+        {
+            Vector3 mousePos = Mouse.current.position.ReadValue();
+            Vector3 screenPoint = new Vector3(mousePos.x, mousePos.y, 10f);
+            Vector3 worldPoint = Camera.main.ScreenToWorldPoint(screenPoint);
+            direction = (worldPoint - transform.position).normalized;
+        }
+
+        direction.y = 0f;
+
+        shootingPoint.position = transform.position + direction * shootRadius;
+        shootingPoint.rotation = Quaternion.LookRotation(direction);
     }
 
     private void OnShoot(InputAction.CallbackContext context)
@@ -71,20 +83,42 @@ public class PlayerControls : MonoBehaviour
         Shoot();
     }
 
-private void Shoot()
-{
-    if (bulletPrefab == null || shootingPoint == null) return;
-
-    GameObject bullet = Instantiate(bulletPrefab, shootingPoint.position, shootingPoint.rotation);
-
-    Rigidbody rb = bullet.GetComponent<Rigidbody>();
-    if (rb != null)
+    private void Shoot()
     {
-        rb.linearVelocity = shootingPoint.forward * bulletSpeed;
-        rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
-        rb.interpolation = RigidbodyInterpolation.Interpolate;
-    }
+        if (shootingPoint == null)
+        {
+            Debug.LogWarning("Shooting Point is not assigned!");
+            return;
+        }
 
-    Physics.IgnoreCollision(bullet.GetComponent<Collider>(), GetComponent<Collider>());
-}
+        GameObject bullet = ObjectPooler.Instance.GetPooledObject(
+            bulletPoolTag,
+            shootingPoint.position,
+            shootingPoint.rotation
+        );
+
+        if (bullet == null)
+        {
+            Debug.LogWarning("No bullet available in the pool.");
+            return;
+        }
+
+        Rigidbody rb = bullet.GetComponent<Rigidbody>();
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector3.zero;
+            rb.angularVelocity = Vector3.zero;
+            rb.linearVelocity = shootingPoint.forward * bulletSpeed;
+            rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
+        }
+
+
+        Collider bulletCollider = bullet.GetComponent<Collider>();
+        Collider playerCollider = GetComponent<Collider>();
+        if (bulletCollider != null && playerCollider != null)
+        {
+            Physics.IgnoreCollision(bulletCollider, playerCollider);
+        }
+    }
 }
