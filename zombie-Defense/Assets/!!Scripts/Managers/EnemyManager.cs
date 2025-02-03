@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 public class EnemyManager : MonoBehaviour
 {
@@ -7,11 +8,74 @@ public class EnemyManager : MonoBehaviour
     [Tooltip("The pool tag corresponding to enemy objects.")]
     public string enemyPoolTag = "Enemy";
 
-    private void Update()
+    [Header("Spawner Settings")]
+    [Tooltip("Initial number of enemies to spawn per wave.")]
+    private int initialEnemyCount = 5; 
+
+    [Tooltip("Multiplier applied to enemy count each wave.")]
+    public float enemyMultiplier = 1.2f; 
+
+    [Tooltip("Duration of each wave in seconds.")]
+    public float waveDuration = 20f; 
+
+    private int currentEnemyCount;
+    private int enemiesToSpawn;
+    private int waveCount = 1;
+    private bool isWaveRunning = false;
+
+    void Start()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        enemiesToSpawn = initialEnemyCount;
+        ActionManager.OnDefenseStart += StartSpawner;
+    }
+
+    void OnDisable()
+    {
+        ActionManager.OnDefenseStart -= StartSpawner;
+    }
+
+    private void StartSpawner()
+    {
+        if (!isWaveRunning) 
+        {
+            isWaveRunning = true;
+            StartCoroutine(WaveSpawnerCoroutine());
+        }
+    }
+
+    private IEnumerator WaveSpawnerCoroutine()
+    {
+        Debug.Log($"Starting Wave {waveCount} with {enemiesToSpawn} enemies.");
+
+        currentEnemyCount = enemiesToSpawn;
+        yield return StartCoroutine(SpawnerCoroutine(waveDuration)); 
+
+        while (currentEnemyCount > 0)
+        {
+            yield return null;
+        }
+        
+        waveCount++;
+        ResetSpawner();
+        Debug.Log($"Wave {waveCount} completed! Next wave will have {enemiesToSpawn} enemies.");
+
+        ActionManager.InvokeDefenseStop();
+        Debug.Log("Build phase starting...");
+        yield return new WaitForSeconds(1f);
+        ActionManager.InvokeBuildStart();
+    }
+
+    private IEnumerator SpawnerCoroutine(float duration)
+    {
+        float timeLeft = duration;
+        int spawnedEnemies = 0;
+
+        while (timeLeft > 0 && spawnedEnemies < enemiesToSpawn)
         {
             SpawnEnemy();
+            spawnedEnemies++;
+            yield return new WaitForSeconds(1f);
+            timeLeft--;
         }
     }
 
@@ -23,7 +87,7 @@ public class EnemyManager : MonoBehaviour
             Vector3 spawnPos = GetRandomNavMeshPerimeterPosition();
             enemy.transform.position = spawnPos;
             enemy.transform.rotation = Quaternion.identity;
-
+            
             Health enemyHealth = enemy.GetComponent<Health>();
             if (enemyHealth != null)
             {
@@ -90,6 +154,19 @@ public class EnemyManager : MonoBehaviour
         {
             enemyHealth.OnDied -= OnEnemyDied;
         }
+
+        currentEnemyCount--;
+        if (currentEnemyCount <= 0)
+        {
+            Debug.Log("All enemies defeated! Preparing for next wave.");
+        }
+
         ObjectPooler.Instance.ReturnToPool(enemy);
+    }
+
+    private void ResetSpawner()
+    {
+        isWaveRunning = false;
+        enemiesToSpawn = Mathf.CeilToInt(enemiesToSpawn * enemyMultiplier);
     }
 }
