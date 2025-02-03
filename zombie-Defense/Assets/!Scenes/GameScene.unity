@@ -131,6 +131,14 @@ PrefabInstance:
       propertyPath: player
       value: 
       objectReference: {fileID: 1256107412}
+    - target: {fileID: 461107119827505364, guid: 3b8fec169d3a10344afd5a38173d8c4a, type: 3}
+      propertyPath: m_Drag
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 461107119827505364, guid: 3b8fec169d3a10344afd5a38173d8c4a, type: 3}
+      propertyPath: m_Mass
+      value: 100
+      objectReference: {fileID: 0}
     - target: {fileID: 845031021042074682, guid: 3b8fec169d3a10344afd5a38173d8c4a, type: 3}
       propertyPath: m_AnchorMax.x
       value: 0
@@ -1500,6 +1508,14 @@ PrefabInstance:
     - target: {fileID: 7311749693761096233, guid: bf2c81e3a3f061641861526213504359, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7404212866925533704, guid: bf2c81e3a3f061641861526213504359, type: 3}
+      propertyPath: m_Drag
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7404212866925533704, guid: bf2c81e3a3f061641861526213504359, type: 3}
+      propertyPath: m_Mass
+      value: 100
       objectReference: {fileID: 0}
     - target: {fileID: 7763248291886871887, guid: bf2c81e3a3f061641861526213504359, type: 3}
       propertyPath: m_AnchorMax.x

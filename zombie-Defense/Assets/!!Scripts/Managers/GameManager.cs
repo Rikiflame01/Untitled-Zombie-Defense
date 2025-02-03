@@ -5,7 +5,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         GameStateManager.Initialize();
-        ActionManager.InvokeBuildStart();
+        ActionManager.InvokeDefenseStart();
     }
 
 }
