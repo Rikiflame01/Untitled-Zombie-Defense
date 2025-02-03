@@ -6,7 +6,7 @@ public class BaseMeleeEnemy : MonoBehaviour
 {
     [Header("Player Settings")]
     [SerializeField] private Transform player;          
-    [SerializeField] private float detectionRange = 50f;
+    [SerializeField] private float detectionRange = 10f;
     
     [Header("Movement Settings")]
     [SerializeField] private float moveSpeed = 3.5f; 
@@ -25,8 +25,6 @@ public class BaseMeleeEnemy : MonoBehaviour
     private void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
-        PlayerControls playerControls = FindFirstObjectByType<PlayerControls>();
-        player = playerControls.gameObject.transform;
     }
 
     private void Start()
@@ -81,7 +79,7 @@ public class BaseMeleeEnemy : MonoBehaviour
             {
                 if (collider.transform == player)
                 {
-                    //Debug.Log("Player has been found by BaseMeleeEnemy!");
+                    Debug.Log("Player has been found by BaseMeleeEnemy!");
                 }
             }
         }

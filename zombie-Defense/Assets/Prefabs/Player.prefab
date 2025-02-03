@@ -385,9 +385,8 @@ GameObject:
   - component: {fileID: 7404212866925533704}
   - component: {fileID: 5826473285340271660}
   - component: {fileID: 3192994720324267292}
+  - component: {fileID: 9076221510426542505}
   - component: {fileID: 8925597354810823097}
-  - component: {fileID: 1008279311347020322}
-  - component: {fileID: 6136938037589158302}
   m_Layer: 7
   m_Name: Player
   m_TagString: Player
@@ -576,9 +575,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 5
   shootingPoint: {fileID: 2876886114810847573}
-  bulletPoolTag: Bullet
+  bulletPrefab: {fileID: 8473089534966043382, guid: f1efc650154e50046b7f5bd597452402, type: 3}
   bulletSpeed: 20
   shootingDistance: 0.5
+--- !u!114 &9076221510426542505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9023272795199628840}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16badd590d8850249bcc0205cdd62f40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
 --- !u!114 &8925597354810823097
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -591,40 +603,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 39101f3ad2b94fd42835bd52ec4a40b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &1008279311347020322
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9023272795199628840}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf6d04381009e4545ba38f95fef9e179, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  entityStats: {fileID: 11400000, guid: 0c16584073903074388becd337a7158f, type: 2}
-  floatingDamagePrefab: {fileID: 1159179087703213061, guid: 7625f2793d458e643832f6938a2caf29, type: 3}
---- !u!114 &6136938037589158302
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 9023272795199628840}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a135c794e34f7f04da05007b69a8ac15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  healthSlider: {fileID: 3993224222601307876}
-  fillImage: {fileID: 6098879483085148080}
-  healthBarColor: {r: 0, g: 1, b: 0.10866976, a: 1}
-  flashColor: {r: 1, g: 1, b: 1, a: 1}
-  flashDuration: 0.2
-  lerpSpeed: 2
-  pulseScale: 1.2
-  pulseSpeed: 5
 --- !u!1 &9053121252952761824
 GameObject:
   m_ObjectHideFlags: 0
