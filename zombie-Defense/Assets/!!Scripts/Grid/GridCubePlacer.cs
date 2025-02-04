@@ -14,7 +14,7 @@ public class GridCubePlacer : MonoBehaviour
     [Header("Placement Settings")]
     [Tooltip("Prefab for the cube to place. Its pivot should be centered.")]
     public GameObject cubePrefab;
-    [Tooltip("Optional parent transform for placed cubes.")]
+    [Tooltip("Optional parent transform for placed cubes (leave null if you don't want any parent).")]
     public Transform gridParent;
     [Tooltip("Y coordinate of the grid (the plane on which the cubes are placed).")]
     public float gridY = 0f;
@@ -49,23 +49,28 @@ public class GridCubePlacer : MonoBehaviour
 
     private void OnPlaceCube(InputAction.CallbackContext context)
     {
-        if (GameStateManager.CurrentState != GameStateManager.GameState.Building){
+
+        if (GameStateManager.CurrentState != GameStateManager.GameState.Building)
+        {
             Debug.Log("Current state is not Building");
             return;
         }
 
+
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
 
-        if (Mathf.Approximately(ray.direction.y, 0f))
-            return;
+
+        if (Mathf.Approximately(ray.direction.y, 0f)) return;
+
+
         float t = -(ray.origin.y - gridY) / ray.direction.y;
-        if (t < 0)
-            return;
+        if (t < 0) return;
+
         Vector3 hitPoint = ray.origin + t * ray.direction;
 
-        Vector3 gridOrigin = transform.position - new Vector3(gridWidth * cellSize, 0, gridHeight * cellSize) * 0.5f;
 
+        Vector3 gridOrigin = transform.position - new Vector3(gridWidth * cellSize, 0, gridHeight * cellSize) * 0.5f;
         Vector3 offset = hitPoint - gridOrigin;
         int cellX = Mathf.FloorToInt(offset.x / cellSize);
         int cellZ = Mathf.FloorToInt(offset.z / cellSize);
@@ -78,13 +83,14 @@ public class GridCubePlacer : MonoBehaviour
 
         float centerX = gridOrigin.x + (cellX + 0.5f) * cellSize;
         float centerZ = gridOrigin.z + (cellZ + 0.5f) * cellSize;
-
         float cubeSize = cellSize * cubeMargin;
         float cubeCenterY = gridY + (cubeSize * 0.5f);
 
         Vector3 cellCenter = new Vector3(centerX, cubeCenterY, centerZ);
 
-        GameObject cube = Instantiate(cubePrefab, cellCenter, Quaternion.identity, gridParent);
-        cube.transform.localScale = new Vector3(0.2f, 1f, 0.2f);
+        GameObject cube = Instantiate(cubePrefab, cellCenter, Quaternion.identity);
+        
+        cube.transform.localScale = new Vector3(1, 1, 1);
+
     }
 }

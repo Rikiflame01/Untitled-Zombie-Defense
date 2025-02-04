@@ -103,8 +103,8 @@ public class Health : MonoBehaviour, IHealth
 
     protected virtual void HandleDeath()
     {
-        Debug.Log("Player died");
         OnDied?.Invoke(gameObject);
+
     }
 
     public void EditorDamage(int damage)
