@@ -78,7 +78,7 @@ MonoBehaviour:
     m_PressedTrigger: Pressed
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
-  m_Interactable: 1
+  m_Interactable: 0
   m_TargetGraphic: {fileID: 0}
   m_FillRect: {fileID: 5596898422731731007}
   m_HandleRect: {fileID: 0}
@@ -578,7 +578,8 @@ MonoBehaviour:
   shootingPoint: {fileID: 2876886114810847573}
   bulletPoolTag: Bullet
   bulletSpeed: 20
-  shootingDistance: 0.5
+  shootRadius: 1.5
+  shootHeightOffset: 1
 --- !u!114 &8925597354810823097
 MonoBehaviour:
   m_ObjectHideFlags: 0

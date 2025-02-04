@@ -90,7 +90,7 @@ public class GridCubePlacer : MonoBehaviour
 
         GameObject cube = Instantiate(cubePrefab, cellCenter, Quaternion.identity);
         
-        cube.transform.localScale = new Vector3(1, 1, 1);
+        cube.transform.localScale = new Vector3(0.8f, 1, 0.8f);
 
     }
 }

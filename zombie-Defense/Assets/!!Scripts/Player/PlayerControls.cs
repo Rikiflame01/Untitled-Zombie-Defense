@@ -12,6 +12,7 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private string bulletPoolTag = "Bullet";
     [SerializeField] private float bulletSpeed = 10f;
     [SerializeField] private float shootRadius = 1.5f; 
+    [SerializeField] private float shootHeightOffset = 1f;
 
     private InputSystem_Actions _inputActions;
     private CharacterController _characterController;
@@ -48,6 +49,7 @@ public class PlayerControls : MonoBehaviour
     {
         Vector3 move = new Vector3(_moveInput.x, 0f, _moveInput.y);
         _characterController.Move(move * (moveSpeed * Time.deltaTime));
+
         UpdateShootingPoint();
     }
     
@@ -74,15 +76,16 @@ public class PlayerControls : MonoBehaviour
 
         direction.y = 0f;
 
-        shootingPoint.position = transform.position + direction * shootRadius;
+        Vector3 basePosition = transform.position + Vector3.up * shootHeightOffset;
+        shootingPoint.position = basePosition + direction * shootRadius;
         shootingPoint.rotation = Quaternion.LookRotation(direction);
     }
 
     private void OnShoot(InputAction.CallbackContext context)
     {
-        if(GameStateManager.CurrentState == GameStateManager.GameState.Building){
+        if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
             return;
-        }
+
         Shoot();
     }
 
@@ -115,7 +118,6 @@ public class PlayerControls : MonoBehaviour
             rb.collisionDetectionMode = CollisionDetectionMode.Continuous;
             rb.interpolation = RigidbodyInterpolation.Interpolate;
         }
-
 
         Collider bulletCollider = bullet.GetComponent<Collider>();
         Collider playerCollider = GetComponent<Collider>();
