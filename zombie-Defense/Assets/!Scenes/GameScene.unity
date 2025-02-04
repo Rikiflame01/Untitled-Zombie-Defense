@@ -1673,6 +1673,7 @@ MonoBehaviour:
   gridHeight: 20
   cellSize: 1
   cubePrefab: {fileID: 1805634902000987078, guid: 1f563b511da65534291df73181bf780b, type: 3}
+  previewPrefab: {fileID: 1805634902000987078, guid: da4f7640a0abf5444a633838e07f0835, type: 3}
   gridParent: {fileID: 1337208626}
   gridY: 0
   cubeMargin: 0.9

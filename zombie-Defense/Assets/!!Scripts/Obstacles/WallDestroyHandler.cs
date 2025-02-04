@@ -6,53 +6,59 @@ public class WallDestroyHandler : MonoBehaviour
 {
     private IHealth healthComponent;
 
-    void Awake()
+    private void Awake()
     {
         healthComponent = GetComponentInParent<IHealth>();
-
         if (healthComponent is Health health)
         {
             health.OnDied += HandleWallDeath;
         }
     }
 
-private void HandleWallDeath(GameObject @object)
-{
-    if (gameObject.layer == LayerMask.NameToLayer("Obstacle"))
+    private void HandleWallDeath(GameObject obj)
     {
-        Rigidbody rigidbody = gameObject.GetComponent<Rigidbody>();
-
-        if (rigidbody != null)
+        var occupant = GetComponent<WallOccupant>();
+        if (occupant != null)
         {
-            transform.localScale = Vector3.one; 
-            
-            rigidbody.constraints &= ~(RigidbodyConstraints.FreezePositionX 
-                                    | RigidbodyConstraints.FreezePositionY 
-                                    | RigidbodyConstraints.FreezePositionZ);
-            rigidbody.constraints &= ~(RigidbodyConstraints.FreezeRotationX
-                                    | RigidbodyConstraints.FreezeRotationY
-                                    | RigidbodyConstraints.FreezeRotationZ);
+            occupant.UnoccupyCell();
+        }
 
-            float forceAmount = 10f;
-            float spinAmount = 5f;
+        if (gameObject.layer == LayerMask.NameToLayer("Obstacle"))
+        {
+            Rigidbody rb = gameObject.GetComponent<Rigidbody>();
+            if (rb != null)
+            {
+                transform.localScale = Vector3.one; 
+                rb.constraints &= ~(
+                    RigidbodyConstraints.FreezePositionX | 
+                    RigidbodyConstraints.FreezePositionY | 
+                    RigidbodyConstraints.FreezePositionZ
+                );
+                rb.constraints &= ~(
+                    RigidbodyConstraints.FreezeRotationX | 
+                    RigidbodyConstraints.FreezeRotationY | 
+                    RigidbodyConstraints.FreezeRotationZ
+                );
 
-            rigidbody.AddForce(Vector3.up * forceAmount, ForceMode.Impulse);
+                float forceAmount = 10f;
+                float spinAmount = 5f;
+                rb.AddForce(Vector3.up * forceAmount, ForceMode.Impulse);
 
-            Vector3 randomTorque = new Vector3(
-                UnityEngine.Random.Range(-spinAmount, spinAmount), 
-                UnityEngine.Random.Range(-spinAmount, spinAmount), 
-                UnityEngine.Random.Range(-spinAmount, spinAmount)
-            );
+                Vector3 randomTorque = new Vector3(
+                    UnityEngine.Random.Range(-spinAmount, spinAmount), 
+                    UnityEngine.Random.Range(-spinAmount, spinAmount), 
+                    UnityEngine.Random.Range(-spinAmount, spinAmount)
+                );
+                rb.AddTorque(randomTorque, ForceMode.Impulse);
 
-            rigidbody.AddTorque(randomTorque, ForceMode.Impulse);
-            StartCoroutine(DestroyWall(@object));
+                StartCoroutine(DestroyWall(obj));
+            }
         }
     }
-}
 
-    private IEnumerator DestroyWall(GameObject gameObject)
+    private IEnumerator DestroyWall(GameObject obj)
     {
         yield return new WaitForSeconds(3);
-        Destroy(gameObject);
+        Destroy(obj);
     }
 }
