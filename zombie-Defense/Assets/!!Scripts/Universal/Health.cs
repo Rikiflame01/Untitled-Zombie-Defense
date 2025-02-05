@@ -104,7 +104,9 @@ public class Health : MonoBehaviour, IHealth
     protected virtual void HandleDeath()
     {
         OnDied?.Invoke(gameObject);
-        
+        if (gameObject.layer == LayerMask.NameToLayer("Enemy")){
+            ScoreManager.Instance.OnEnemyDeath(gameObject);
+        }
     }
 
     public void EditorDamage(int damage)

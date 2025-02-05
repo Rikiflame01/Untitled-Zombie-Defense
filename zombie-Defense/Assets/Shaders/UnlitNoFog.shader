@@ -3,7 +3,7 @@ Shader "Custom/UnlitNoFog" {
         _Color ("Color", Color) = (1,1,1,1)
     }
     SubShader {
-        Tags { "RenderType"="Opaque" "Queue"="Overlay" }
+        Tags { "RenderType"="Opaque" "Queue"="Background" }  // Set render queue to "Background"
         LOD 100
 
         // Disable fog for this shader.
@@ -11,9 +11,8 @@ Shader "Custom/UnlitNoFog" {
 
         Pass {
             Lighting Off
-            ZWrite On
+            ZWrite Off  // Disable depth writing
             Cull Off
-            // Optionally disable blending if you want an opaque look.
             Blend SrcAlpha OneMinusSrcAlpha
 
             CGPROGRAM

@@ -6,7 +6,7 @@ public class BuildTimer : MonoBehaviour
 {
     [Header("Timer Settings")]
     [Tooltip("Duration of the build phase in seconds.")]
-    public float buildDuration = 20f;
+    public float buildDuration = 30f;
 
     [Header("UI Elements")]
     [Tooltip("TextMeshProUGUI to display the countdown.")]
