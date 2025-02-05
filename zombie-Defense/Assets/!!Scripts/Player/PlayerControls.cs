@@ -26,6 +26,8 @@ public class PlayerControls : MonoBehaviour
 
     private void OnEnable()
     {
+        Health health = GetComponent<Health>();
+        health.OnDied += DisableScript;
         _inputActions.Enable();
         _inputActions.Player.Move.performed += OnMove;
         _inputActions.Player.Move.canceled += OnMove;
@@ -51,6 +53,13 @@ public class PlayerControls : MonoBehaviour
         _characterController.Move(move * (moveSpeed * Time.deltaTime));
 
         UpdateShootingPoint();
+    }
+
+    private void DisableScript(GameObject @object){
+        
+        if (@object.CompareTag("Player")){
+        this.enabled = false;
+        }
     }
     
     private void UpdateShootingPoint()

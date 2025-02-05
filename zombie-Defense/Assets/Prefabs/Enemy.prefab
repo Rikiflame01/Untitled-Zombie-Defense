@@ -363,7 +363,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 5670787948147071896}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.5
+  m_Radius: 0.25
   m_Speed: 3.5
   m_Acceleration: 8
   avoidancePriority: 50
@@ -418,9 +418,10 @@ MonoBehaviour:
   player: {fileID: 0}
   detectionRange: 50
   moveSpeed: 3.5
-  stoppingDistance: 2
-  attackRange: 2
-  sphereCheckRadius: 2
+  stoppingDistance: 1
+  attackRange: 2.2
+  sphereCheckRadius: 2.2
+  attackCooldown: 1
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 256
@@ -442,6 +443,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityStats: {fileID: 11400000, guid: cbb5d2480800dbb4da9e0938a56563ef, type: 2}
   floatingDamagePrefab: {fileID: 1159179087703213061, guid: 7625f2793d458e643832f6938a2caf29, type: 3}
+  currentHealth: 0
 --- !u!114 &6161652670339177152
 MonoBehaviour:
   m_ObjectHideFlags: 0
