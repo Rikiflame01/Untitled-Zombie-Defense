@@ -11,13 +11,15 @@ public class ScoreManager : MonoBehaviour
     private bool playerDamaged = false;
     private float roundDuration;
     private Health playerHealth;
+    private int totalScore = 0;
 
     [Header("UI Elements")]
     public TextMeshProUGUI enemyDeathText;
     public TextMeshProUGUI roundTimeText;
     public TextMeshProUGUI playerDamageText;
-
     public TextMeshProUGUI totalScoreText;
+
+    public int TotalScore => totalScore;
 
     private void Awake()
     {
@@ -54,6 +56,7 @@ public class ScoreManager : MonoBehaviour
 
     private void StartRound()
     {
+        totalScore = 0;
         totalScoreText.text = "0";
         enemyDeathCount = 0;
         playerDamaged = false;
@@ -87,6 +90,38 @@ public class ScoreManager : MonoBehaviour
         UpdateUI();
     }
 
+    public void DecreaseTotalScore(int amount)
+    {
+        if (totalScore == 0){
+            return;
+        }
+        totalScore -= amount;
+        UpdateScoreUI();
+    }
+
+    private void UpdateScoreUI()
+    {
+        if (totalScoreText != null)
+            totalScoreText.text = totalScore.ToString();
+
+        GameObject buildPreviewObject = FindObjectInLayer("BuildPreview");
+
+        if (buildPreviewObject != null)
+        {
+            Transform canvasTransform = buildPreviewObject.transform.parent;
+
+            if (canvasTransform != null)
+            {
+                TextMeshProUGUI tmpComponent = canvasTransform.GetComponentInChildren<TextMeshProUGUI>();
+
+                if (tmpComponent != null)
+                {
+                    tmpComponent.text = totalScore.ToString();
+                }
+            }
+        }
+    }
+
     private void UpdateUI()
     {
         if (enemyDeathText != null)
@@ -98,16 +133,27 @@ public class ScoreManager : MonoBehaviour
         if (playerDamageText != null)
             playerDamageText.text = (playerDamaged ? "Yes - 1 " : "No + 3");
 
-        if (totalScoreText != null)
+        int damagePenalty = playerDamaged ? -1 : 3;
+        int enemyScore = enemyDeathCount;
+        float timePenalty = Mathf.Max(0, roundDuration / 5);
+
+        totalScore = Mathf.RoundToInt(damagePenalty + enemyScore * 1.5f - timePenalty);
+        
+        UpdateScoreUI();
+    }
+
+    private GameObject FindObjectInLayer(string layerName)
+    {
+        int layer = LayerMask.NameToLayer(layerName);
+        GameObject[] allObjects = GameObject.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+        foreach (GameObject obj in allObjects)
         {
-            
-            int damagePenalty = playerDamaged ? -1 : 3;
-            int enemyScore = enemyDeathCount;
-            float timePenalty = Mathf.Max(0, roundDuration / 5);
-
-            float totalScore = damagePenalty + enemyScore*1.5f - timePenalty;
-
-            totalScoreText.text = totalScore.ToString("F0");
+            if (obj.layer == layer)
+            {
+                return obj;
+            }
         }
+        return null;
     }
 }

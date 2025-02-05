@@ -169,18 +169,17 @@ public class GridCubePlacer : MonoBehaviour
     private void OnPlaceCube(InputAction.CallbackContext context)
     {
         if (GameStateManager.CurrentState != GameStateManager.GameState.Building)
-        {
-            Debug.Log("Current state is not Building");
             return;
-        }
 
         Vector2 mousePos = Mouse.current.position.ReadValue();
         Ray ray = mainCamera.ScreenPointToRay(mousePos);
 
-        if (Mathf.Approximately(ray.direction.y, 0f)) return;
+        if (Mathf.Approximately(ray.direction.y, 0f)) 
+            return;
 
         float t = -(ray.origin.y - gridY) / ray.direction.y;
-        if (t < 0) return;
+        if (t < 0) 
+            return;
 
         Vector3 hitPoint = ray.origin + t * ray.direction;
         Vector3 gridOrigin = transform.position - new Vector3(gridWidth * cellSize, 0, gridHeight * cellSize) * 0.5f;
@@ -200,11 +199,20 @@ public class GridCubePlacer : MonoBehaviour
             return;
         }
 
+        int cost = 1;
+        if (ScoreManager.Instance.TotalScore < cost)
+        {
+            Debug.Log("Not enough score to place this object.");
+            return;
+        }
+
         float centerX = gridOrigin.x + (cellX + 0.5f) * cellSize;
         float centerZ = gridOrigin.z + (cellZ + 0.5f) * cellSize;
         float cubeSize = cellSize * cubeMargin;
         float cubeCenterY = gridY + (cubeSize * 0.5f);
         Vector3 cellCenter = new Vector3(centerX, cubeCenterY, centerZ);
+
+        ScoreManager.Instance.DecreaseTotalScore(cost);
 
         GameObject cube = Instantiate(cubePrefab, cellCenter, Quaternion.identity);
         cube.transform.localScale = new Vector3(0.8f, 1f, 0.8f);
@@ -215,4 +223,6 @@ public class GridCubePlacer : MonoBehaviour
         occupant.cellX = cellX;
         occupant.cellZ = cellZ;
     }
+
+
 }
