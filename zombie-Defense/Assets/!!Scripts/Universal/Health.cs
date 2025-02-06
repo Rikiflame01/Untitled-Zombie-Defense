@@ -103,24 +103,10 @@ public class Health : MonoBehaviour, IHealth
 
     protected virtual void HandleDeath()
     {
-        OnDied?.Invoke(gameObject);
         if (gameObject.layer == LayerMask.NameToLayer("Enemy")){
-            ScoreManager.Instance.OnEnemyDeath(gameObject);
+        ScoreManager.Instance.OnEnemyDeath(gameObject);
         }
-    }
-
-    public void ResetHealth()
-    {
-        if (entityStats == null)
-        {
-            Debug.LogWarning("No EntityStats assigned to " + gameObject.name);
-            return;
-        }
-
-        currentHealth = entityStats.maxHealth;
-        entityStats.health = currentHealth;
-
-        OnHealthChanged?.Invoke(currentHealth, MaxHealth);
+        OnDied?.Invoke(gameObject);
     }
 
     public void EditorDamage(int damage)

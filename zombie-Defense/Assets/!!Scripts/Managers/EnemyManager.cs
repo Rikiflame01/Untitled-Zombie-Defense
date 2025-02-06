@@ -1,25 +1,22 @@
 using System.Collections;
 using UnityEngine;
-using UnityEngine.AI;
 
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Spawn Settings")]
-    [Tooltip("Enemy prefab to instantiate.")]
     public GameObject enemyPrefab;
-    
-    [Tooltip("Ground object that defines the spawn area. Must have a Collider and be on the 'Ground' layer.")]
     public GameObject groundObject;
     
-    [Tooltip("Initial number of enemies to spawn per wave.")]
+    [Tooltip("Initial number of enemies per wave.")]
     public int initialEnemyCount = 5;
     
-    [Tooltip("Multiplier applied to enemy count each wave.")]
+    [Tooltip("Multiplier for enemy count each wave.")]
     public float enemyMultiplier = 1.2f;
-    
-    [Tooltip("Duration of each wave in seconds.")]
-    public float waveDuration = 20f;
-    
+
+    [Tooltip("Minimum and maximum number of enemies per batch.")]
+    public int minBatchSize = 1;
+    public int maxBatchSize = 8;
+
     private int currentEnemyCount;
     private int enemiesToSpawn;
     private int waveCount = 1;
@@ -43,8 +40,9 @@ public class EnemySpawner : MonoBehaviour
         if (!isWaveRunning)
         {
             isWaveRunning = true;
-            enemiesToSpawn = initialEnemyCount + waveCount*2;
+            enemiesToSpawn = initialEnemyCount + waveCount * 2;
             StartCoroutine(WaveSpawnerCoroutine());
+            StartCoroutine(CheckEnemyCount());
         }
     }
     
@@ -53,8 +51,9 @@ public class EnemySpawner : MonoBehaviour
         Debug.Log($"Starting Wave {waveCount} with {enemiesToSpawn} enemies.");
         currentEnemyCount = enemiesToSpawn;
         
-        yield return StartCoroutine(SpawnerCoroutine(waveDuration));
-                while (currentEnemyCount > 0)
+        yield return StartCoroutine(SpawnerCoroutine());
+
+        while (currentEnemyCount > 0)
         {
             yield return null;
         }
@@ -62,24 +61,30 @@ public class EnemySpawner : MonoBehaviour
         waveCount++;
         enemiesToSpawn = Mathf.CeilToInt(enemiesToSpawn * enemyMultiplier);
         Debug.Log($"Wave {waveCount - 1} completed! Next wave will have {enemiesToSpawn} enemies.");
+
         ActionManager.InvokeDefenseStop();
         Debug.Log("Build phase starting...");
         yield return new WaitForSeconds(1f);
         ActionManager.InvokeBuildStart();
         isWaveRunning = false;
     }
-    
-    private IEnumerator SpawnerCoroutine(float duration)
+
+    private IEnumerator SpawnerCoroutine()
     {
-        float timeLeft = duration;
         int spawnedEnemies = 0;
-        
-        while (timeLeft > 0 && spawnedEnemies < enemiesToSpawn)
+
+        while (spawnedEnemies < enemiesToSpawn)
         {
-            SpawnEnemy();
-            spawnedEnemies++;
+            int batchSize = Random.Range(minBatchSize, maxBatchSize + 1);
+            batchSize = Mathf.Min(batchSize, enemiesToSpawn - spawnedEnemies);
+
+            for (int i = 0; i < batchSize; i++)
+            {
+                SpawnEnemy();
+                spawnedEnemies++;
+            }
+
             yield return new WaitForSeconds(1f);
-            timeLeft--;
         }
     }
     
@@ -102,8 +107,27 @@ public class EnemySpawner : MonoBehaviour
     }
     #endregion
 
-    #region Spawn Position Calculation
+    #region Enemy Count Safety Check
+    private IEnumerator CheckEnemyCount()
+    {
+        yield return new WaitForSeconds(5f);
 
+        while (isWaveRunning)
+        {
+            GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+
+            if (currentEnemyCount == 1 && enemies.Length == 0)
+            {
+                Debug.LogWarning("Enemy count mismatch detected! Correcting enemy count to 0.");
+                currentEnemyCount = 0;
+            }
+
+            yield return new WaitForSeconds(5f);
+        }
+    }
+    #endregion
+
+    #region Spawn Position Calculation
     private Vector3 GetPerimeterSpawnPosition()
     {
         if (groundObject == null)
@@ -125,20 +149,12 @@ public class EnemySpawner : MonoBehaviour
         int edge = Random.Range(0, 4);
         switch (edge)
         {
-            case 0: // Bottom edge (min.z)
-                spawnPos = new Vector3(Random.Range(bounds.min.x, bounds.max.x), bounds.center.y, bounds.min.z);
-                break;
-            case 1: // Top edge (max.z)
-                spawnPos = new Vector3(Random.Range(bounds.min.x, bounds.max.x), bounds.center.y, bounds.max.z);
-                break;
-            case 2: // Left edge (min.x)
-                spawnPos = new Vector3(bounds.min.x, bounds.center.y, Random.Range(bounds.min.z, bounds.max.z));
-                break;
-            case 3: // Right edge (max.x)
-                spawnPos = new Vector3(bounds.max.x, bounds.center.y, Random.Range(bounds.min.z, bounds.max.z));
-                break;
+            case 0: spawnPos = new Vector3(Random.Range(bounds.min.x, bounds.max.x), bounds.center.y, bounds.min.z); break;
+            case 1: spawnPos = new Vector3(Random.Range(bounds.min.x, bounds.max.x), bounds.center.y, bounds.max.z); break;
+            case 2: spawnPos = new Vector3(bounds.min.x, bounds.center.y, Random.Range(bounds.min.z, bounds.max.z)); break;
+            case 3: spawnPos = new Vector3(bounds.max.x, bounds.center.y, Random.Range(bounds.min.z, bounds.max.z)); break;
         }
-        
+
         RaycastHit hit;
         Vector3 rayOrigin = new Vector3(spawnPos.x, bounds.max.y + 1f, spawnPos.z);
         if (Physics.Raycast(rayOrigin, Vector3.down, out hit, bounds.size.y + 2f))
@@ -159,11 +175,25 @@ public class EnemySpawner : MonoBehaviour
     #endregion
 
     #region Enemy Death Handling
-
     private void OnEnemyDied(GameObject enemy)
     {
-        currentEnemyCount--;
+        Health enemyHealth = enemy.GetComponent<Health>();
+        if (enemyHealth != null)
+        {
+            enemyHealth.OnDied -= OnEnemyDied;
+        }
+
+        if (currentEnemyCount > 0)
+        {
+            currentEnemyCount--;
+        }
+        else
+        {
+            Debug.LogWarning("Enemy count underflow detected!");
+        }
+
         Destroy(enemy);
     }
+
     #endregion
 }

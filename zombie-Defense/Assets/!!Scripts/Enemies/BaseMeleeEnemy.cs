@@ -43,9 +43,13 @@ public class BaseMeleeEnemy : MonoBehaviour
     private float moveToObstacleStartTime = 0f;
     private Vector3 lastPlayerDestination;
 
+    private float pathCheckCooldown = 1.5f;
+    private float lastPathCheckTime = 0f;
+
     private void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+
         navMeshAgent.autoBraking = false;
         navMeshAgent.autoRepath = false;
         navMeshAgent.speed = moveSpeed;
@@ -90,20 +94,27 @@ public class BaseMeleeEnemy : MonoBehaviour
 
     private void TransitionToState(AIState newState)
     {
-
-        if ((currentState == AIState.MoveToObstacle || currentState == AIState.AttackObstacle) && currentObstacleTarget != null)
+        if (currentState == AIState.MoveToObstacle || currentState == AIState.AttackObstacle)
         {
-            UnsubscribeFromObstacleDeath(currentObstacleTarget);
+            if (currentObstacleTarget != null)
+            {
+                UnsubscribeFromObstacleDeath(currentObstacleTarget);
+            }
         }
-
 
         if (currentState == AIState.MoveToObstacle)
         {
             moveToObstacleStartTime = 0f;
         }
 
+        if (newState != AIState.AttackObstacle) 
+        {
+            navMeshAgent.isStopped = false;
+        }
+
         currentState = newState;
     }
+
 
     #region State Updates
 
@@ -181,10 +192,14 @@ public class BaseMeleeEnemy : MonoBehaviour
             return;
         }
 
-        if (HasFullyValidPathToPlayer())
+        if (Time.time - lastPathCheckTime > pathCheckCooldown)
         {
-            TransitionToState(AIState.ChasePlayer);
-            return;
+            lastPathCheckTime = Time.time;
+            if (HasFullyValidPathToPlayer())
+            {
+                TransitionToState(AIState.ChasePlayer);
+                return;
+            }
         }
 
         if (moveToObstacleStartTime == 0f)
@@ -208,7 +223,9 @@ public class BaseMeleeEnemy : MonoBehaviour
                 navMeshAgent.SetDestination(currentObstacleTarget.position);
         }
     }
-
+   
+   
+   
     private void UpdateAttackObstacle()
     {
         navMeshAgent.isStopped = true;
@@ -349,30 +366,5 @@ public class BaseMeleeEnemy : MonoBehaviour
     }
 
     #endregion
-
-    public void ResetEnemy()
-    {
-        transform.position = Vector3.zero;
-        transform.rotation = Quaternion.identity;
-
-        NavMeshAgent agent = GetComponent<NavMeshAgent>();
-        if (agent != null)
-        {
-            agent.ResetPath();
-            agent.velocity = Vector3.zero;
-        }
-
-        currentState = AIState.CheckPath;
-        currentObstacleTarget = null;
-        lastAttackTime = -1f;
-        moveToObstacleStartTime = 0f;
-        lastPlayerDestination = Vector3.zero;
-        
-        Health health = GetComponent<Health>();
-        if (health != null)
-        {
-            health.ResetHealth();
-        }
-    }
 
 }

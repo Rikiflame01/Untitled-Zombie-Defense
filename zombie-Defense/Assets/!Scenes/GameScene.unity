@@ -4424,8 +4424,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enemyPrefab: {fileID: 5670787948147071896, guid: 3b8fec169d3a10344afd5a38173d8c4a, type: 3}
   groundObject: {fileID: 1337208625}
-  numberOfEnemies: 5
-  spawnYOffset: 0
+  initialEnemyCount: 5
+  enemyMultiplier: 1.2
+  minBatchSize: 1
+  maxBatchSize: 8
 --- !u!1 &2090662172
 GameObject:
   m_ObjectHideFlags: 0
@@ -4502,9 +4504,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   poolItems:
-  - tag: Enemy
-    prefab: {fileID: 5670787948147071896, guid: 3b8fec169d3a10344afd5a38173d8c4a, type: 3}
-    size: 50
   - tag: Bullet
     prefab: {fileID: 8473089534966043382, guid: f1efc650154e50046b7f5bd597452402, type: 3}
     size: 50
