@@ -14,6 +14,7 @@ public class BuildTimer : MonoBehaviour
 
     private float timeLeft;
     private bool isRunning = false;
+    private Coroutine countdownCoroutine;
 
     void Start()
     {
@@ -23,11 +24,13 @@ public class BuildTimer : MonoBehaviour
         }
         
         ActionManager.OnBuildStart += StartBuildTimer;
+        ActionManager.OnBuildSkip += EndBuildTimerEarly;
     }
 
     void OnDisable()
     {
         ActionManager.OnBuildStart -= StartBuildTimer;
+        ActionManager.OnBuildSkip -= EndBuildTimerEarly;
     }
 
     private void StartBuildTimer()
@@ -42,7 +45,7 @@ public class BuildTimer : MonoBehaviour
             timerText.gameObject.SetActive(true);
         }
 
-        StartCoroutine(BuildCountdownCoroutine());
+        countdownCoroutine = StartCoroutine(BuildCountdownCoroutine());
     }
 
     private IEnumerator BuildCountdownCoroutine()
@@ -54,20 +57,7 @@ public class BuildTimer : MonoBehaviour
             timeLeft--;
         }
 
-        UpdateTimerUI(0);
-
-        Debug.Log("Build phase ended. Starting defense phase.");
-
-        isRunning = false;
-
-        yield return new WaitForSeconds(1f);
-
-        if (timerText != null)
-        {
-            timerText.gameObject.SetActive(false);
-        }
-
-        ActionManager.InvokeDefenseStart();
+        EndBuildTimer();
     }
 
     private void UpdateTimerUI(float time)
@@ -80,5 +70,33 @@ public class BuildTimer : MonoBehaviour
         {
             Debug.LogWarning("Timer TextMeshPro reference is missing!");
         }
+    }
+
+    public void EndBuildTimerEarly()
+    {
+        if (!isRunning) return;
+
+        if (countdownCoroutine != null)
+        {
+            StopCoroutine(countdownCoroutine);
+        }
+
+        EndBuildTimer();
+    }
+
+    private void EndBuildTimer()
+    {
+        isRunning = false;
+        timeLeft = 0;
+        UpdateTimerUI(0);
+
+        Debug.Log("Build phase ended early. Starting defense phase.");
+
+        if (timerText != null)
+        {
+            timerText.gameObject.SetActive(false);
+        }
+
+        ActionManager.InvokeDefenseStart();
     }
 }

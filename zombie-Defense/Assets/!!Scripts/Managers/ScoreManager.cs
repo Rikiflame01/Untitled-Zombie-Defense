@@ -11,15 +11,13 @@ public class ScoreManager : MonoBehaviour
     private bool playerDamaged = false;
     private float roundDuration;
     private Health playerHealth;
-    private int totalScore = 0;
+    public int totalScore = 0;
 
     [Header("UI Elements")]
     public TextMeshProUGUI enemyDeathText;
     public TextMeshProUGUI roundTimeText;
     public TextMeshProUGUI playerDamageText;
     public TextMeshProUGUI totalScoreText;
-
-    public int TotalScore => totalScore;
 
     private void Awake()
     {
@@ -92,9 +90,8 @@ public class ScoreManager : MonoBehaviour
 
     public void DecreaseTotalScore(int amount)
     {
-        if (totalScore == 0){
-            return;
-        }
+        if (totalScore == 0) return;
+        
         totalScore -= amount;
         UpdateScoreUI();
     }
@@ -104,21 +101,24 @@ public class ScoreManager : MonoBehaviour
         if (totalScoreText != null)
             totalScoreText.text = totalScore.ToString();
 
-        GameObject buildPreviewObject = FindObjectInLayer("BuildPreview");
+        GameObject buildPreviewObject = FindObjectByTag("TxtBuildPreview");
 
         if (buildPreviewObject != null)
         {
-            Transform canvasTransform = buildPreviewObject.transform.parent;
+            TextMeshProUGUI tmpComponent = buildPreviewObject.GetComponent<TextMeshProUGUI>();
 
-            if (canvasTransform != null)
+            if (tmpComponent != null)
             {
-                TextMeshProUGUI tmpComponent = canvasTransform.GetComponentInChildren<TextMeshProUGUI>();
-
-                if (tmpComponent != null)
-                {
-                    tmpComponent.text = totalScore.ToString();
-                }
+                tmpComponent.text = totalScore.ToString();
             }
+            else
+            {
+                Debug.LogError("TxtBuildPreview found, but it has no TextMeshProUGUI component!");
+            }
+        }
+        else
+        {
+            Debug.LogError("TxtBuildPreview object not found in the scene! Make sure it's tagged correctly.");
         }
     }
 
@@ -142,18 +142,13 @@ public class ScoreManager : MonoBehaviour
         UpdateScoreUI();
     }
 
-    private GameObject FindObjectInLayer(string layerName)
+    private GameObject FindObjectByTag(string tag)
     {
-        int layer = LayerMask.NameToLayer(layerName);
-        GameObject[] allObjects = GameObject.FindObjectsByType<GameObject>(FindObjectsInactive.Include, FindObjectsSortMode.None);
-
-        foreach (GameObject obj in allObjects)
+        GameObject obj = GameObject.FindGameObjectWithTag(tag);
+        if (obj == null)
         {
-            if (obj.layer == layer)
-            {
-                return obj;
-            }
+            Debug.LogError($"No object found with tag '{tag}'. Make sure it's assigned in the Unity Editor.");
         }
-        return null;
+        return obj;
     }
 }

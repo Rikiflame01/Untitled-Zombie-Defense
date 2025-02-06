@@ -200,7 +200,7 @@ public class GridCubePlacer : MonoBehaviour
         }
 
         int cost = 1;
-        if (ScoreManager.Instance.TotalScore < cost)
+        if (ScoreManager.Instance.totalScore < cost)
         {
             Debug.Log("Not enough score to place this object.");
             return;

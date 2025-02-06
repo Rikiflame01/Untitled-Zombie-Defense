@@ -32,6 +32,7 @@ public class PlayerControls : MonoBehaviour
         _inputActions.Player.Move.performed += OnMove;
         _inputActions.Player.Move.canceled += OnMove;
         _inputActions.Player.Shoot.performed += OnShoot;
+        _inputActions.Player.SkipBuild.performed += SkipBuildEarly;
     }
 
     private void OnDisable()
@@ -40,6 +41,7 @@ public class PlayerControls : MonoBehaviour
         _inputActions.Player.Move.canceled -= OnMove;
         _inputActions.Player.Shoot.performed -= OnShoot;
         _inputActions.Disable();
+        _inputActions.Player.SkipBuild.performed -= SkipBuildEarly;
     }
 
     private void OnMove(InputAction.CallbackContext context)
@@ -60,6 +62,10 @@ public class PlayerControls : MonoBehaviour
         if (@object.CompareTag("Player")){
         this.enabled = false;
         }
+    }
+
+    private void SkipBuildEarly(InputAction.CallbackContext context){
+        ActionManager.InvokeBuildSkip();
     }
     
     private void UpdateShootingPoint()

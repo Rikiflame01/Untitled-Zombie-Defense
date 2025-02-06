@@ -8,6 +8,7 @@ public static class ActionManager
     public static event Action OnDefenseStop;
     public static event Action OnBuildStart;
     public static event Action OnBuildStop;
+    public static event Action OnBuildSkip;
     public static event Action OnPaused;
     public static event Action OnUnpaused;
 
@@ -29,6 +30,11 @@ public static class ActionManager
     public static void InvokeBuildStop()
     {
         OnBuildStop?.Invoke();
+    }
+
+    public static void InvokeBuildSkip()
+    {
+        OnBuildSkip?.Invoke();
     }
 
     public static void InvokePaused()

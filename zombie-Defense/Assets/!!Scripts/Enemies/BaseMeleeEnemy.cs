@@ -349,4 +349,30 @@ public class BaseMeleeEnemy : MonoBehaviour
     }
 
     #endregion
+
+    public void ResetEnemy()
+    {
+        transform.position = Vector3.zero;
+        transform.rotation = Quaternion.identity;
+
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        if (agent != null)
+        {
+            agent.ResetPath();
+            agent.velocity = Vector3.zero;
+        }
+
+        currentState = AIState.CheckPath;
+        currentObstacleTarget = null;
+        lastAttackTime = -1f;
+        moveToObstacleStartTime = 0f;
+        lastPlayerDestination = Vector3.zero;
+        
+        Health health = GetComponent<Health>();
+        if (health != null)
+        {
+            health.ResetHealth();
+        }
+    }
+
 }

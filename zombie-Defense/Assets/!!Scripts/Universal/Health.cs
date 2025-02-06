@@ -109,6 +109,20 @@ public class Health : MonoBehaviour, IHealth
         }
     }
 
+    public void ResetHealth()
+    {
+        if (entityStats == null)
+        {
+            Debug.LogWarning("No EntityStats assigned to " + gameObject.name);
+            return;
+        }
+
+        currentHealth = entityStats.maxHealth;
+        entityStats.health = currentHealth;
+
+        OnHealthChanged?.Invoke(currentHealth, MaxHealth);
+    }
+
     public void EditorDamage(int damage)
     {
         TakeDamage(damage);
