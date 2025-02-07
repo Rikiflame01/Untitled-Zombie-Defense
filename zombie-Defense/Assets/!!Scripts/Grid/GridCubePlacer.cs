@@ -215,7 +215,7 @@ public class GridCubePlacer : MonoBehaviour
         ScoreManager.Instance.DecreaseTotalScore(cost);
 
         GameObject cube = Instantiate(cubePrefab, cellCenter, Quaternion.identity);
-        cube.transform.localScale = new Vector3(0.8f, 1f, 0.8f);
+        cube.transform.localScale = new Vector3(1.15f, 1.15f, 1.15f);
 
         occupiedCells[cellX, cellZ] = true;
 
