@@ -28,7 +28,7 @@ public class PooledBullet : MonoBehaviour
             
             if (health != null)
             {
-                health.TakeDamage(100);
+                health.TakeDamage(34);
             }
 
             ReturnToPool();
