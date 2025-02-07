@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
@@ -8,6 +9,7 @@ public class PooledBullet : MonoBehaviour
 {
     private Rigidbody rb;
 
+    private bool hitTarget = false;
     private void OnEnable()
     {
         rb = GetComponent<Rigidbody>();
@@ -16,25 +18,44 @@ public class PooledBullet : MonoBehaviour
     private IEnumerator DespawnBullet()
     {
         yield return new WaitForSeconds(3);
-        ReturnToPool();
+        ReturnToPool(); 
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        StartCoroutine(DespawnBullet());
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
+            hitTarget = true;
             Health health = collision.gameObject.GetComponent<Health>();
             
             if (health != null)
             {
                 health.TakeDamage(34);
             }
-
+            hitTarget = false;
+            StopAllCoroutines();
             ReturnToPool();
         }
+        else{
+    if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
+    {
+        hitTarget = true;
+        Health health = collision.gameObject.GetComponent<Health>();
+        
+        if (health != null)
+        {
+            health.TakeDamage(34);
+        }
+        hitTarget = false;
+        StopAllCoroutines();
+        ReturnToPool();
     }
-
+            else if (hitTarget == false && this.gameObject.activeSelf)
+            {
+                StartCoroutine(DespawnBullet());
+            }
+        }
+    }
 
     private void ReturnToPool()
     {
@@ -45,4 +66,5 @@ public class PooledBullet : MonoBehaviour
         }
         ObjectPooler.Instance.ReturnToPool(gameObject);
     }
+
 }

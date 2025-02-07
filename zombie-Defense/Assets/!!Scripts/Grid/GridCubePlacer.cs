@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -215,14 +216,47 @@ public class GridCubePlacer : MonoBehaviour
         ScoreManager.Instance.DecreaseTotalScore(cost);
 
         GameObject cube = Instantiate(cubePrefab, cellCenter, Quaternion.identity);
-        cube.transform.localScale = new Vector3(1.15f, 1.15f, 1.15f);
+        
+        // Start the scaling animation
+        StartCoroutine(AnimatePlacement(cube));
 
         occupiedCells[cellX, cellZ] = true;
 
         var occupant = cube.AddComponent<WallOccupant>();
         occupant.cellX = cellX;
         occupant.cellZ = cellZ;
-
     }
+    private IEnumerator AnimatePlacement(GameObject cube)
+    {
+        Vector3 normalScale = new Vector3(1.15f, 1.15f, 1.15f);  // Intended final scale
+        Vector3 enlargedScale = normalScale * 1.3f;      // 30% larger for effect
+        float duration = 0.15f; // Time for each phase
+
+        float time = 0f;
+
+        // Scale up effect
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float progress = time / duration;
+            cube.transform.localScale = Vector3.Lerp(normalScale, enlargedScale, progress);
+            yield return null;
+        }
+
+        time = 0f;
+
+        // Scale back down to normal
+        while (time < duration)
+        {
+            time += Time.deltaTime;
+            float progress = time / duration;
+            cube.transform.localScale = Vector3.Lerp(enlargedScale, normalScale, progress);
+            yield return null;
+        }
+
+        cube.transform.localScale = normalScale; // Ensure it snaps to final scale
+    }
+
+
 
 }

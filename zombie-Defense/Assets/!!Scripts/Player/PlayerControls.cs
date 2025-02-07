@@ -107,9 +107,6 @@ public class PlayerControls : MonoBehaviour
         UpdatePredictionLine();
     }
 
-    /// <summary>
-    /// Updates the prediction line using a simple projectile simulation.
-    /// </summary>
 private void UpdatePredictionLine()
 {
     if (predictionLine == null)
@@ -124,15 +121,13 @@ private void UpdatePredictionLine()
     Vector3 initialPosition = shootingPoint.position;
     Vector3 initialVelocity = shootingPoint.forward * bulletSpeed;
     
-    // Fetch the bullet's physics material to get bounciness.
-    float bounceFactor = 1f; // Default to 1 (perfect bounce) if none is found.
+    float bounceFactor = 1f;
     Collider bulletCollider = shootingPoint.GetComponent<Collider>();
     if (bulletCollider != null && bulletCollider.sharedMaterial != null)
     {
         bounceFactor = bulletCollider.sharedMaterial.bounciness;
     }
     
-    // Prepare the array of trajectory points.
     Vector3[] trajectoryPoints = new Vector3[predictionSegments];
     trajectoryPoints[0] = initialPosition;
     
@@ -140,44 +135,33 @@ private void UpdatePredictionLine()
     Vector3 currentVelocity = initialVelocity;
     float timeStep = predictionTimeStep;
     
-    // Simulate the projectile trajectory.
     for (int i = 1; i < predictionSegments; i++)
     {
-        // Predict where we would be after the full timeStep if no collision occurred.
         Vector3 fullStep = currentVelocity * timeStep + 0.5f * Physics.gravity * timeStep * timeStep;
         float fullStepDistance = fullStep.magnitude;
         Vector3 fullStepDirection = (fullStepDistance > 0f) ? fullStep / fullStepDistance : Vector3.zero;
 
         RaycastHit hit;
-        // Check if we hit something along the path.
         if (Physics.Raycast(currentPosition, fullStepDirection, out hit, fullStepDistance, obstacleLayer, QueryTriggerInteraction.Collide))
         {
-            // Determine how far into the timeStep the collision occurs.
             float tCollision = hit.distance / fullStepDistance;
             float collisionTime = tCollision * timeStep;
             
-            // Calculate the position at collision.
             Vector3 collisionPosition = currentPosition + currentVelocity * collisionTime + 0.5f * Physics.gravity * collisionTime * collisionTime;
             trajectoryPoints[i] = collisionPosition;
             
-            // Calculate the velocity at the moment of collision.
             Vector3 velocityAtCollision = currentVelocity + Physics.gravity * collisionTime;
             
-            // Reflect the velocity using the hit normal and apply bounce factor.
             Vector3 reflectedVelocity = Vector3.Reflect(velocityAtCollision, hit.normal) * bounceFactor;
             
-            // Calculate the remaining time in this time step.
             float remainingTime = timeStep - collisionTime;
             
-            // Update velocity with gravity for the remainder.
             currentVelocity = reflectedVelocity + Physics.gravity * remainingTime;
             
-            // Update the current position using the reflected velocity over the remaining time.
             currentPosition = collisionPosition + reflectedVelocity * remainingTime + 0.5f * Physics.gravity * remainingTime * remainingTime;
         }
         else
         {
-            // No collision: use normal projectile motion.
             Vector3 nextPos = currentPosition + fullStep;
             trajectoryPoints[i] = nextPos;
             currentPosition = nextPos;
