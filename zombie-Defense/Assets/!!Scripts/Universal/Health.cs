@@ -57,6 +57,9 @@ public class Health : MonoBehaviour, IHealth
     {
         if (damage <= 0 || entityStats == null || IsDead == true) return;
 
+        if(entityStats.isPlayer == true){
+            CameraShake.Instance.ShakeCamera();
+        }
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, MaxHealth);
 

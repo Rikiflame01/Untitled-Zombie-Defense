@@ -58,6 +58,7 @@ public class WallDestroyHandler : MonoBehaviour
 
     private IEnumerator DestroyWall(GameObject obj)
     {
+        CameraShake.Instance.ShakeCamera();
         yield return new WaitForSeconds(3);
         Destroy(obj);
     }
