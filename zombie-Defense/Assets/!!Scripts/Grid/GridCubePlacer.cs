@@ -222,7 +222,7 @@ public class GridCubePlacer : MonoBehaviour
         var occupant = cube.AddComponent<WallOccupant>();
         occupant.cellX = cellX;
         occupant.cellZ = cellZ;
-    }
 
+    }
 
 }

@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -8,9 +10,8 @@ public class BaseMeleeEnemy : MonoBehaviour
     {
         CheckPath,
         ChasePlayer,
-        FindObstacle,
-        MoveToObstacle,
-        AttackObstacle
+        AttackObstacle,
+        AttackPlayer
     }
 
     [Header("Player Settings")]
@@ -25,42 +26,47 @@ public class BaseMeleeEnemy : MonoBehaviour
     [SerializeField] private float attackRange = 2f;
     [SerializeField] private float sphereCheckRadius = 2f;
     [SerializeField] private float attackCooldown = 1f;
+    [SerializeField] private int attackDamage = 10;
 
-    [Header("Layer Masks")]
+    [Header("Destructible Obstacle Settings")]
+    [SerializeField] private float destructibleObjectCheckRate = 10f;
+    [SerializeField] private float destructibleCheckDistance = 1f; 
     [SerializeField] private LayerMask obstacleLayer;
+
+    [Header("Player Layer")]
     [SerializeField] private LayerMask playerLayer;
 
-    [Header("Optional EyePoint")]
-    [SerializeField] private Transform eyePoint;
+    [Header("Raycast Eye Settings")]
+    [SerializeField, Tooltip("Vertical offset for the raycast origin (eye height)")]
+    private float raycastEyeHeight = 1f;
 
-    private AIState currentState = AIState.CheckPath;
+    [Header("Debug - Destructible Walls")]
+    [SerializeField] private List<Transform> destructibleObjects = new List<Transform>();
+
+    private Vector3 lastRayOrigin;
+    private Vector3 lastRayDirection;
+
     private NavMeshAgent navMeshAgent;
-
-    private Transform currentObstacleTarget;
-    private Vector3 obstacleNavmeshPoint;
-
+    private AIState currentState = AIState.CheckPath;
     private float lastAttackTime = -1f;
-    private float moveToObstacleStartTime = 0f;
-    private Vector3 lastPlayerDestination;
-
-    private float pathCheckCooldown = 1.5f;
-    private float lastPathCheckTime = 0f;
+    private Transform currentObstacleTarget;
+    private Coroutine destructibleCheckCoroutine;
 
     private void Awake()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
-
         navMeshAgent.autoBraking = false;
         navMeshAgent.autoRepath = false;
         navMeshAgent.speed = moveSpeed;
         navMeshAgent.stoppingDistance = stoppingDistance;
 
-        if (!player)
+        if (player == null)
         {
-            PlayerControls pc = FindFirstObjectByType<PlayerControls>();
-            if (pc)
-                player = pc.transform;
+            GameObject p = GameObject.FindGameObjectWithTag("Player");
+            if (p != null)
+                player = p.transform;
         }
+
     }
 
     private void Start()
@@ -70,7 +76,8 @@ public class BaseMeleeEnemy : MonoBehaviour
 
     private void Update()
     {
-        if (!player) return;
+        if (player == null)
+            return;
 
         switch (currentState)
         {
@@ -80,43 +87,14 @@ public class BaseMeleeEnemy : MonoBehaviour
             case AIState.ChasePlayer:
                 UpdateChasePlayer();
                 break;
-            case AIState.FindObstacle:
-                UpdateFindObstacle();
-                break;
-            case AIState.MoveToObstacle:
-                UpdateMoveToObstacle();
-                break;
             case AIState.AttackObstacle:
                 UpdateAttackObstacle();
                 break;
+            case AIState.AttackPlayer:
+                UpdateAttackPlayer();
+                break;
         }
     }
-
-    private void TransitionToState(AIState newState)
-    {
-        if (currentState == AIState.MoveToObstacle || currentState == AIState.AttackObstacle)
-        {
-            if (currentObstacleTarget != null)
-            {
-                UnsubscribeFromObstacleDeath(currentObstacleTarget);
-            }
-        }
-
-        if (currentState == AIState.MoveToObstacle)
-        {
-            moveToObstacleStartTime = 0f;
-        }
-
-        if (newState != AIState.AttackObstacle) 
-        {
-            navMeshAgent.isStopped = false;
-        }
-
-        currentState = newState;
-    }
-
-
-    #region State Updates
 
     private void UpdateCheckPath()
     {
@@ -126,126 +104,56 @@ public class BaseMeleeEnemy : MonoBehaviour
             navMeshAgent.ResetPath();
             return;
         }
-
-        if (HasFullyValidPathToPlayer())
-            TransitionToState(AIState.ChasePlayer);
-        else
-            TransitionToState(AIState.FindObstacle);
+        navMeshAgent.SetDestination(player.position);
+        TransitionToState(AIState.ChasePlayer);
     }
 
     private void UpdateChasePlayer()
     {
+        navMeshAgent.SetDestination(player.position);
 
-        if (Vector3.Distance(lastPlayerDestination, player.position) > 1f)
+        float distToPlayer = Vector3.Distance(transform.position, player.position);
+        if (distToPlayer <= attackRange && Time.time - lastAttackTime >= attackCooldown)
         {
-            lastPlayerDestination = player.position;
-            navMeshAgent.SetDestination(lastPlayerDestination);
+            TransitionToState(AIState.AttackPlayer);
         }
-        navMeshAgent.isStopped = false;
+    }
 
+    private void UpdateAttackPlayer()
+    {
+        navMeshAgent.isStopped = true;
         float distToPlayer = Vector3.Distance(transform.position, player.position);
         if (distToPlayer <= attackRange && Time.time - lastAttackTime >= attackCooldown)
         {
             AttackPlayer();
         }
-
-
-        if (!HasFullyValidPathToPlayer())
-            TransitionToState(AIState.FindObstacle);
+        else if (distToPlayer > attackRange)
+        {
+            navMeshAgent.isStopped = false;
+            TransitionToState(AIState.ChasePlayer);
+        }
     }
 
-    private void UpdateFindObstacle()
+    private void UpdateAttackObstacle()
     {
-
-        Transform obstacle = BestPathManager.GetNearestBestPathObstacle(transform.position);
-
-
-        if (obstacle == null)
+        navMeshAgent.isStopped = false;
+        if (currentObstacleTarget == null || !currentObstacleTarget.gameObject.activeInHierarchy)
         {
-            obstacle = FindNearestObstacle(transform.position, detectionRange);
+            TransitionToState(AIState.CheckPath);
+            return;
         }
 
-        if (obstacle)
+        float distToObstacle = Vector3.Distance(transform.position, currentObstacleTarget.position);
+        if (distToObstacle <= attackRange && Time.time - lastAttackTime >= attackCooldown)
         {
-            if (currentObstacleTarget != obstacle)
-            {
-                if (currentObstacleTarget != null)
-                    UnsubscribeFromObstacleDeath(currentObstacleTarget);
-
-                currentObstacleTarget = obstacle;
-                SubscribeToObstacleDeath(currentObstacleTarget);
-            }
-            obstacleNavmeshPoint = GetNavmeshPointNear(obstacle.position, 5f);
-            TransitionToState(AIState.MoveToObstacle);
+            navMeshAgent.isStopped = true;
+            AttackObstacle();
         }
         else
         {
-            TransitionToState(AIState.CheckPath);
+            navMeshAgent.SetDestination(currentObstacleTarget.position);
         }
     }
-
-    private void UpdateMoveToObstacle()
-    {
-        if (!currentObstacleTarget || !currentObstacleTarget.gameObject.activeInHierarchy)
-        {
-            TransitionToState(AIState.CheckPath);
-            return;
-        }
-
-        if (Time.time - lastPathCheckTime > pathCheckCooldown)
-        {
-            lastPathCheckTime = Time.time;
-            if (HasFullyValidPathToPlayer())
-            {
-                TransitionToState(AIState.ChasePlayer);
-                return;
-            }
-        }
-
-        if (moveToObstacleStartTime == 0f)
-            moveToObstacleStartTime = Time.time;
-        else if (Time.time - moveToObstacleStartTime > 5f)
-        {
-            TransitionToState(AIState.FindObstacle);
-            moveToObstacleStartTime = 0f;
-            return;
-        }
-
-        navMeshAgent.isStopped = false;
-        navMeshAgent.SetDestination(obstacleNavmeshPoint);
-
-        if (!navMeshAgent.pathPending && navMeshAgent.remainingDistance <= navMeshAgent.stoppingDistance + 0.2f)
-        {
-            float distToObstacle = Vector3.Distance(transform.position, currentObstacleTarget.position);
-            if (distToObstacle <= attackRange)
-                TransitionToState(AIState.AttackObstacle);
-            else
-                navMeshAgent.SetDestination(currentObstacleTarget.position);
-        }
-    }
-   
-   
-   
-    private void UpdateAttackObstacle()
-    {
-        navMeshAgent.isStopped = true;
-
-        if (!currentObstacleTarget || !currentObstacleTarget.gameObject.activeInHierarchy)
-        {
-            TransitionToState(AIState.CheckPath);
-            return;
-        }
-
-        if (Vector3.Distance(transform.position, currentObstacleTarget.position) <= attackRange &&
-            Time.time - lastAttackTime >= attackCooldown)
-        {
-            AttackObstacle();
-        }
-    }
-
-    #endregion
-
-    #region Attack Methods
 
     private void AttackPlayer()
     {
@@ -255,9 +163,11 @@ public class BaseMeleeEnemy : MonoBehaviour
             if (c.transform == player)
             {
                 Health hp = player.GetComponent<Health>();
-                if (hp)
-                    hp.TakeDamage(10);
-                lastAttackTime = Time.time;
+                if (hp != null)
+                {
+                    hp.TakeDamage(attackDamage);
+                    lastAttackTime = Time.time;
+                }
                 break;
             }
         }
@@ -268,70 +178,93 @@ public class BaseMeleeEnemy : MonoBehaviour
         Collider[] hits = Physics.OverlapSphere(transform.position, sphereCheckRadius, obstacleLayer);
         foreach (Collider c in hits)
         {
-            if (c.transform == currentObstacleTarget)
+            Health oh = c.transform.GetComponentInParent<Health>();
+            if (oh != null && oh.transform == currentObstacleTarget)
             {
-                Health oh = currentObstacleTarget.GetComponent<Health>();
-                if (oh)
+                oh.TakeDamage(attackDamage);
+                lastAttackTime = Time.time;
+                if (!currentObstacleTarget.gameObject.activeInHierarchy || oh.currentHealth <= 0)
                 {
-                    oh.TakeDamage(10);
-                    lastAttackTime = Time.time;
-
-                    if (!currentObstacleTarget.gameObject.activeInHierarchy || oh.currentHealth <= 0)
-                    {
-                        UnsubscribeFromObstacleDeath(currentObstacleTarget);
-                        currentObstacleTarget = null;
-                        TransitionToState(AIState.CheckPath);
-                    }
+                    UnsubscribeFromObstacleDeath(currentObstacleTarget);
+                    currentObstacleTarget = null;
+                    StartCoroutine(DelayedPathCheck());
                 }
                 break;
             }
         }
     }
 
-    #endregion
-
-    #region Utility Methods
-
-    private bool HasFullyValidPathToPlayer()
+    private bool HasValidPathToPlayer()
     {
-        if (!player)
-            return false;
-
         NavMeshPath path = new NavMeshPath();
         navMeshAgent.CalculatePath(player.position, path);
         return path.status == NavMeshPathStatus.PathComplete;
     }
 
-    private Transform FindNearestObstacle(Vector3 center, float range)
+    private IEnumerator DelayedPathCheck()
     {
-        Collider[] cols = Physics.OverlapSphere(center, range, obstacleLayer);
-        float minDist = Mathf.Infinity;
-        Transform nearest = null;
-        foreach (Collider col in cols)
+        yield return new WaitForSeconds(0.5f);
+        if (HasValidPathToPlayer())
         {
-            float dist = Vector3.Distance(center, col.transform.position);
-            if (dist < minDist)
-            {
-                minDist = dist;
-                nearest = col.transform;
-            }
+            Debug.Log("Path to player is now clear; resuming chase.");
+            TransitionToState(AIState.ChasePlayer);
         }
-        return nearest;
+        else
+        {
+            Debug.Log("Path to player is still blocked; searching for next obstacle.");
+            TransitionToState(AIState.CheckPath);
+        }
     }
 
-    private Vector3 GetNavmeshPointNear(Vector3 pos, float maxDist)
+    private IEnumerator CheckForDestructibleObjects()
     {
-        if (NavMesh.SamplePosition(pos, out NavMeshHit hit, maxDist, NavMesh.AllAreas))
-            return hit.position;
+        WaitForSeconds wait = new WaitForSeconds(1f / destructibleObjectCheckRate);
+        Vector3[] corners = new Vector3[2];
 
-        return pos;
+        while (currentState == AIState.ChasePlayer)
+        {
+            int cornerCount = navMeshAgent.path.GetCornersNonAlloc(corners);
+            Debug.Log($"Corner count: {cornerCount}");
+            if (cornerCount > 1)
+            {
+                lastRayOrigin = corners[0] + Vector3.up * raycastEyeHeight;
+                lastRayDirection = (corners[1] - corners[0]).normalized;
+
+                Debug.DrawRay(lastRayOrigin, lastRayDirection * destructibleCheckDistance, Color.magenta, 0.5f);
+
+                if (Physics.Raycast(lastRayOrigin, lastRayDirection, out RaycastHit hit, destructibleCheckDistance, obstacleLayer, QueryTriggerInteraction.Collide))
+                {
+                    Health potential = hit.collider.GetComponentInParent<Health>();
+                    if (potential != null)
+                    {
+                        if (HasValidPathToPlayer())
+                        {
+                            Debug.Log("Path to player is clear; no need to attack obstacle.");
+                        }
+                        else
+                        {
+                            Debug.Log($"Destructible object found: {potential.gameObject.name}");
+                            currentObstacleTarget = potential.transform;
+                            SubscribeToObstacleDeath(currentObstacleTarget);
+                            TransitionToState(AIState.AttackObstacle);
+                            yield break;
+                        }
+                    }
+                }
+                else
+                {
+                    Debug.Log("Raycast did not hit any obstacle.");
+                }
+            }
+            yield return wait;
+        }
     }
 
     private void SubscribeToObstacleDeath(Transform obstacle)
     {
         if (obstacle != null)
         {
-            Health health = obstacle.GetComponent<Health>();
+            Health health = obstacle.GetComponentInParent<Health>();
             if (health != null)
                 health.OnDied += OnObstacleDied;
         }
@@ -341,7 +274,7 @@ public class BaseMeleeEnemy : MonoBehaviour
     {
         if (obstacle != null)
         {
-            Health health = obstacle.GetComponent<Health>();
+            Health health = obstacle.GetComponentInParent<Health>();
             if (health != null)
                 health.OnDied -= OnObstacleDied;
         }
@@ -353,18 +286,46 @@ public class BaseMeleeEnemy : MonoBehaviour
         {
             UnsubscribeFromObstacleDeath(currentObstacleTarget);
             currentObstacleTarget = null;
-            TransitionToState(AIState.CheckPath);
+            StartCoroutine(DelayedPathCheck());
         }
     }
 
-    private void OnDrawGizmosSelected()
+    private void TransitionToState(AIState newState)
+    {
+        if (currentState == AIState.ChasePlayer && destructibleCheckCoroutine != null)
+        {
+            StopCoroutine(destructibleCheckCoroutine);
+            destructibleCheckCoroutine = null;
+        }
+
+        currentState = newState;
+
+        if (newState == AIState.ChasePlayer)
+        {
+            navMeshAgent.isStopped = false;
+            if (destructibleCheckCoroutine == null)
+                destructibleCheckCoroutine = StartCoroutine(CheckForDestructibleObjects());
+        }
+    }
+
+    private void OnDrawGizmos()
     {
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireSphere(transform.position, detectionRange);
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, sphereCheckRadius);
+
+        if (destructibleObjects != null)
+        {
+            Gizmos.color = Color.cyan;
+            foreach (Transform t in destructibleObjects)
+            {
+                if (t != null)
+                    Gizmos.DrawSphere(t.position, 0.3f);
+            }
+        }
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawLine(lastRayOrigin, lastRayOrigin + lastRayDirection * destructibleCheckDistance);
     }
-
-    #endregion
-
 }

@@ -37,7 +37,6 @@ public class FollowScoreCurrencytxt : MonoBehaviour
 
         if (buildPreviewObject == null)
         {
-            Debug.LogError("BuildPreview object not found! Make sure it is tagged correctly.");
             return null;
         }
 

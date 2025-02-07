@@ -38,6 +38,7 @@ public static class GameStateManager
 
     private static void HandleDefenseStart()
     {
+        NavMeshManager.Instance.RebuildNavMesh();
         SetDefending();
     }
 

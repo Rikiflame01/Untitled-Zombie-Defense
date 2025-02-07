@@ -8,6 +8,7 @@ TagManager:
   - TxtBuildPreview
   - BuildPreview
   - Enemy
+  - Wall
   layers:
   - Default
   - TransparentFX

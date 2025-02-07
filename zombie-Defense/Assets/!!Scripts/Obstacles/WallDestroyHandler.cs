@@ -61,4 +61,8 @@ public class WallDestroyHandler : MonoBehaviour
         yield return new WaitForSeconds(3);
         Destroy(obj);
     }
+    void OnDisable()
+    {
+        NavMeshManager.Instance.RebuildNavMesh();
+    }
 }
