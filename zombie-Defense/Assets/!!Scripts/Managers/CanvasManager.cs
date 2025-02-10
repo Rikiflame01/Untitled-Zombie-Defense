@@ -19,6 +19,8 @@ public class CanvasManager : MonoBehaviour
 
     private void EnableScoreCanvas()
     {
+        SoundManager.Instance.PlaySFX("waveDone",1f);
+        SoundManager.Instance.SwitchToBuildingMode();
         scorePanel.SetActive(true);
         StartCoroutine(DisableCanvas());
     }
@@ -31,6 +33,7 @@ public class CanvasManager : MonoBehaviour
     private void EnableDeathCanvas(GameObject @object)
     {
         if (@object.CompareTag("Player")){
+            SoundManager.Instance.PlaySFX("playerDeath",1f);
             endGameCanvas.SetActive(true);
         }
     }

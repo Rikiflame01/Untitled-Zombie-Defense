@@ -21,6 +21,8 @@ public static class ActionManager
     
     public static void InvokeDefenseStart()
     {
+        SoundManager.Instance.PlaySFX("waveStart",1f);
+        SoundManager.Instance.SwitchToBattleMode();
         OnDefenseStart?.Invoke();
     }
 

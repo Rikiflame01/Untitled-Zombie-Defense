@@ -31,6 +31,7 @@ public class PooledBullet : MonoBehaviour
             if (health != null)
             {
                 health.TakeDamage(34);
+                SoundManager.Instance.PlaySFX("bulletHit",0.7f);
             }
             hitTarget = false;
             StopAllCoroutines();

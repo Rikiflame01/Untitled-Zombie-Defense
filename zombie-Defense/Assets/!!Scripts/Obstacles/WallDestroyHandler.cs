@@ -70,6 +70,7 @@ public class WallDestroyHandler : MonoBehaviour
         }
         NavMeshManager.Instance.RebuildNavMesh();
         CameraShake.Instance.ShakeCamera();
+        SoundManager.Instance.PlaySFX("crateDestroyed",1f);
         yield return new WaitForSeconds(3);
         Destroy(obj);
     }

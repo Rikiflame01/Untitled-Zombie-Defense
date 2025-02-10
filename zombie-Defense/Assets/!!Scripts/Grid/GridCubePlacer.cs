@@ -31,15 +31,20 @@ public class GridCubePlacer : MonoBehaviour
     [Range(0f, 1f)]
     public float cubeMargin = 0.9f;
 
-    [Header("References")]
-    [Tooltip("The camera used for raycasting. If left empty, Camera.main will be used.")]
+    [Header("Camera Settings")]
+    [Tooltip("The camera used for raycasting when not using a render texture. If left empty, Camera.main will be used.")]
     public Camera mainCamera;
+
+    [Header("Render Texture Settings")]
+    [Tooltip("The camera rendering to the render texture. If using a render texture for input, assign this camera.")]
+    public Camera renderTextureCamera;
+    [Tooltip("The Render Texture used for displaying the game.")]
+    public RenderTexture renderTexture;
 
     private InputAction clickAction;
     private GameObject previewInstance;
-
     public bool[,] occupiedCells;
-    
+
     private Renderer previewRenderer;
     private Color validPreviewColor = new Color(1f, 1f, 1f, 0.5f);
     private Color invalidPreviewColor = new Color(1f, 0f, 0f, 0.5f);
@@ -53,6 +58,9 @@ public class GridCubePlacer : MonoBehaviour
         }
         Instance = this;
 
+        if (mainCamera == null)
+            mainCamera = Camera.main;
+
         clickAction = new InputAction("PlaceCube", binding: "<Mouse>/leftButton");
         clickAction.performed += OnPlaceCube;
 
@@ -63,7 +71,6 @@ public class GridCubePlacer : MonoBehaviour
     {
         occupiedCells[x, z] = false;
     }
-
 
     private void OnEnable()
     {
@@ -99,10 +106,25 @@ public class GridCubePlacer : MonoBehaviour
         }
     }
 
-    private void UpdatePreviewPosition()
+    private Ray GetRayFromMouse()
     {
         Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = mainCamera.ScreenPointToRay(mousePos);
+        if (renderTexture != null && renderTextureCamera != null)
+        {
+            float scaleX = (float)renderTexture.width / Screen.width;
+            float scaleY = (float)renderTexture.height / Screen.height;
+            Vector2 renderMousePos = new Vector2(mousePos.x * scaleX, mousePos.y * scaleY);
+            return renderTextureCamera.ScreenPointToRay(new Vector3(renderMousePos.x, renderMousePos.y, 0));
+        }
+        else
+        {
+            return mainCamera.ScreenPointToRay(mousePos);
+        }
+    }
+
+    private void UpdatePreviewPosition()
+    {
+        Ray ray = GetRayFromMouse();
 
         if (Mathf.Approximately(ray.direction.y, 0f))
         {
@@ -124,11 +146,7 @@ public class GridCubePlacer : MonoBehaviour
         int cellZ = Mathf.FloorToInt(offset.z / cellSize);
 
         bool inBounds = (cellX >= 0 && cellX < gridWidth && cellZ >= 0 && cellZ < gridHeight);
-        bool isOccupied = false;
-        if (inBounds)
-        {
-            isOccupied = occupiedCells[cellX, cellZ];
-        }
+        bool isOccupied = inBounds && occupiedCells[cellX, cellZ];
 
         previewInstance.SetActive(true);
 
@@ -148,14 +166,7 @@ public class GridCubePlacer : MonoBehaviour
             previewInstance.transform.position = cellCenter;
             previewInstance.transform.localScale = new Vector3(0.8f, 1f, 0.8f);
 
-            if (isOccupied)
-            {
-                SetPreviewColor(invalidPreviewColor);
-            }
-            else
-            {
-                SetPreviewColor(validPreviewColor);
-            }
+            SetPreviewColor(isOccupied ? invalidPreviewColor : validPreviewColor);
         }
     }
 
@@ -172,14 +183,13 @@ public class GridCubePlacer : MonoBehaviour
         if (GameStateManager.CurrentState != GameStateManager.GameState.Building)
             return;
 
-        Vector2 mousePos = Mouse.current.position.ReadValue();
-        Ray ray = mainCamera.ScreenPointToRay(mousePos);
+        Ray ray = GetRayFromMouse();
 
-        if (Mathf.Approximately(ray.direction.y, 0f)) 
+        if (Mathf.Approximately(ray.direction.y, 0f))
             return;
 
         float t = -(ray.origin.y - gridY) / ray.direction.y;
-        if (t < 0) 
+        if (t < 0)
             return;
 
         Vector3 hitPoint = ray.origin + t * ray.direction;
@@ -225,7 +235,9 @@ public class GridCubePlacer : MonoBehaviour
         var occupant = cube.AddComponent<WallOccupant>();
         occupant.cellX = cellX;
         occupant.cellZ = cellZ;
+        SoundManager.Instance.PlaySFX("placeCrate", 1f);
     }
+
     private IEnumerator AnimatePlacement(GameObject cube)
     {
         Vector3 normalScale = new Vector3(1.15f, 1.15f, 1.15f);  // Intended final scale
@@ -254,9 +266,6 @@ public class GridCubePlacer : MonoBehaviour
             yield return null;
         }
 
-        cube.transform.localScale = normalScale; // Ensure it snaps to final scale
+        cube.transform.localScale = normalScale;
     }
-
-
-
 }

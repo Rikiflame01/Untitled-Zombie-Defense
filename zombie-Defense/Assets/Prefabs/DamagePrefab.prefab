@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7215080564021397998}
   - component: {fileID: 647993928798396664}
   - component: {fileID: -4372457154231110640}
+  - component: {fileID: 5727490029217051178}
   m_Layer: 0
   m_Name: DamagePrefab
   m_TagString: Untagged
@@ -27,14 +28,14 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1159179087703213061}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.0025596276, y: 0.001926037, z: 0.0006312185}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7913675951207514257}
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 90, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 2.06}
@@ -119,6 +120,19 @@ MonoBehaviour:
   lifetime: 1
   wiggleSpeed: 30
   wiggleAmount: 0.5
+--- !u!114 &5727490029217051178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1159179087703213061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16badd590d8850249bcc0205cdd62f40, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
 --- !u!1 &7750383723684565859
 GameObject:
   m_ObjectHideFlags: 0

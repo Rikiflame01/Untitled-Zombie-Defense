@@ -19,6 +19,10 @@ public class PlayerControls : MonoBehaviour
     [SerializeField, Tooltip("Number of segments for the prediction line")] private int predictionSegments = 20;
     [SerializeField, Tooltip("Time step (in seconds) between prediction segments")] private float predictionTimeStep = 0.1f;
 
+    [Header("Render Texture Settings")]
+    [SerializeField] private Camera renderTextureCamera;
+    [SerializeField] private RenderTexture renderTexture;
+
     private InputSystem_Actions _inputActions;
     private CharacterController _characterController;
     private Vector2 _moveInput;
@@ -78,11 +82,19 @@ public class PlayerControls : MonoBehaviour
     
     private void UpdateShootingPoint()
     {
-        if (Camera.main == null || Mouse.current == null)
+        if (renderTextureCamera == null || Mouse.current == null || renderTexture == null)
             return;
 
         Vector3 direction;
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+
+        // Convert mouse position from screen space to render texture space
+        float scaleX = (float)renderTexture.width / Screen.width;
+        float scaleY = (float)renderTexture.height / Screen.height;
+        Vector2 renderMousePos = new Vector2(mousePos.x * scaleX, mousePos.y * scaleY);
+
+        // Convert the mouse position in render texture space to a world ray
+        Ray ray = renderTextureCamera.ScreenPointToRay(new Vector3(renderMousePos.x, renderMousePos.y, 0));
         RaycastHit hit;
         int groundLayerMask = LayerMask.GetMask("Ground");
 
@@ -92,9 +104,8 @@ public class PlayerControls : MonoBehaviour
         }
         else
         {
-            Vector3 mousePos = Mouse.current.position.ReadValue();
-            Vector3 screenPoint = new Vector3(mousePos.x, mousePos.y, 10f);
-            Vector3 worldPoint = Camera.main.ScreenToWorldPoint(screenPoint);
+            Vector3 screenPoint = new Vector3(renderMousePos.x, renderMousePos.y, 10f);
+            Vector3 worldPoint = renderTextureCamera.ScreenToWorldPoint(screenPoint);
             direction = (worldPoint - transform.position).normalized;
         }
 
@@ -107,72 +118,72 @@ public class PlayerControls : MonoBehaviour
         UpdatePredictionLine();
     }
 
-private void UpdatePredictionLine()
-{
-    if (predictionLine == null)
-        return;
-    
-    if (GameStateManager.CurrentState == GameStateManager.GameState.Building){
-        predictionLine.enabled = false;
-        return;
-    }
-    predictionLine.enabled = true;
-
-    Vector3 initialPosition = shootingPoint.position;
-    Vector3 initialVelocity = shootingPoint.forward * bulletSpeed;
-    
-    float bounceFactor = 1f;
-    Collider bulletCollider = shootingPoint.GetComponent<Collider>();
-    if (bulletCollider != null && bulletCollider.sharedMaterial != null)
+    private void UpdatePredictionLine()
     {
-        bounceFactor = bulletCollider.sharedMaterial.bounciness;
-    }
-    
-    Vector3[] trajectoryPoints = new Vector3[predictionSegments];
-    trajectoryPoints[0] = initialPosition;
-    
-    Vector3 currentPosition = initialPosition;
-    Vector3 currentVelocity = initialVelocity;
-    float timeStep = predictionTimeStep;
-    
-    for (int i = 1; i < predictionSegments; i++)
-    {
-        Vector3 fullStep = currentVelocity * timeStep + 0.5f * Physics.gravity * timeStep * timeStep;
-        float fullStepDistance = fullStep.magnitude;
-        Vector3 fullStepDirection = (fullStepDistance > 0f) ? fullStep / fullStepDistance : Vector3.zero;
-
-        RaycastHit hit;
-        if (Physics.Raycast(currentPosition, fullStepDirection, out hit, fullStepDistance, obstacleLayer, QueryTriggerInteraction.Collide))
+        if (predictionLine == null)
+            return;
+        
+        if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
         {
-            float tCollision = hit.distance / fullStepDistance;
-            float collisionTime = tCollision * timeStep;
-            
-            Vector3 collisionPosition = currentPosition + currentVelocity * collisionTime + 0.5f * Physics.gravity * collisionTime * collisionTime;
-            trajectoryPoints[i] = collisionPosition;
-            
-            Vector3 velocityAtCollision = currentVelocity + Physics.gravity * collisionTime;
-            
-            Vector3 reflectedVelocity = Vector3.Reflect(velocityAtCollision, hit.normal) * bounceFactor;
-            
-            float remainingTime = timeStep - collisionTime;
-            
-            currentVelocity = reflectedVelocity + Physics.gravity * remainingTime;
-            
-            currentPosition = collisionPosition + reflectedVelocity * remainingTime + 0.5f * Physics.gravity * remainingTime * remainingTime;
+            predictionLine.enabled = false;
+            return;
         }
-        else
-        {
-            Vector3 nextPos = currentPosition + fullStep;
-            trajectoryPoints[i] = nextPos;
-            currentPosition = nextPos;
-            currentVelocity += Physics.gravity * timeStep;
-        }
-    }
-    
-    predictionLine.positionCount = predictionSegments;
-    predictionLine.SetPositions(trajectoryPoints);
-}
+        predictionLine.enabled = true;
 
+        Vector3 initialPosition = shootingPoint.position;
+        Vector3 initialVelocity = shootingPoint.forward * bulletSpeed;
+        
+        float bounceFactor = 1f;
+        Collider bulletCollider = shootingPoint.GetComponent<Collider>();
+        if (bulletCollider != null && bulletCollider.sharedMaterial != null)
+        {
+            bounceFactor = bulletCollider.sharedMaterial.bounciness;
+        }
+        
+        Vector3[] trajectoryPoints = new Vector3[predictionSegments];
+        trajectoryPoints[0] = initialPosition;
+        
+        Vector3 currentPosition = initialPosition;
+        Vector3 currentVelocity = initialVelocity;
+        float timeStep = predictionTimeStep;
+        
+        for (int i = 1; i < predictionSegments; i++)
+        {
+            Vector3 fullStep = currentVelocity * timeStep + 0.5f * Physics.gravity * timeStep * timeStep;
+            float fullStepDistance = fullStep.magnitude;
+            Vector3 fullStepDirection = (fullStepDistance > 0f) ? fullStep / fullStepDistance : Vector3.zero;
+
+            RaycastHit hit;
+            if (Physics.Raycast(currentPosition, fullStepDirection, out hit, fullStepDistance, obstacleLayer, QueryTriggerInteraction.Collide))
+            {
+                float tCollision = hit.distance / fullStepDistance;
+                float collisionTime = tCollision * timeStep;
+                
+                Vector3 collisionPosition = currentPosition + currentVelocity * collisionTime + 0.5f * Physics.gravity * collisionTime * collisionTime;
+                trajectoryPoints[i] = collisionPosition;
+                
+                Vector3 velocityAtCollision = currentVelocity + Physics.gravity * collisionTime;
+                
+                Vector3 reflectedVelocity = Vector3.Reflect(velocityAtCollision, hit.normal) * bounceFactor;
+                
+                float remainingTime = timeStep - collisionTime;
+                
+                currentVelocity = reflectedVelocity + Physics.gravity * remainingTime;
+                
+                currentPosition = collisionPosition + reflectedVelocity * remainingTime + 0.5f * Physics.gravity * remainingTime * remainingTime;
+            }
+            else
+            {
+                Vector3 nextPos = currentPosition + fullStep;
+                trajectoryPoints[i] = nextPos;
+                currentPosition = nextPos;
+                currentVelocity += Physics.gravity * timeStep;
+            }
+        }
+        
+        predictionLine.positionCount = predictionSegments;
+        predictionLine.SetPositions(trajectoryPoints);
+    }
 
     private void OnShoot(InputAction.CallbackContext context)
     {
@@ -218,5 +229,6 @@ private void UpdatePredictionLine()
         {
             Physics.IgnoreCollision(bulletCollider, playerCollider);
         }
+        SoundManager.Instance.PlaySFX("shoot",1.2f);
     }
 }
