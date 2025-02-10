@@ -109,6 +109,7 @@ public class Health : MonoBehaviour, IHealth
     {
         if (gameObject.layer == LayerMask.NameToLayer("Enemy")){
         ScoreManager.Instance.OnEnemyDeath(gameObject);
+        SoundManager.Instance.PlaySFX("zombieDeath", 2f);
         }
         OnDied?.Invoke(gameObject);
     }
