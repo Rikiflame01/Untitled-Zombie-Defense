@@ -118,4 +118,17 @@ public class SoundManager : MonoBehaviour
             Debug.LogWarning("SFX not found: " + sfxName);
         }
     }
+
+    public void PlaySFXWithPitch(string sfxName, float volume, float pitch)
+    {
+        if (sfxClips.TryGetValue(sfxName, out AudioClip clip))
+        {
+            sfxSource.pitch = Mathf.Clamp(pitch, 0.5f, 2f);
+            sfxSource.PlayOneShot(clip, volume);
+        }
+        else
+        {
+            Debug.LogWarning("SFX not found: " + sfxName);
+        }
+    }
 }

@@ -4064,6 +4064,8 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 33887799ea6a9b048ad1a698de7b5d75, type: 3}
   - name: waveStart
     clip: {fileID: 8300000, guid: 221b9431d0064794c949e04c8a4a257a, type: 3}
+  - name: playerHurt
+    clip: {fileID: 8300000, guid: ed042c87951ed40268592d7ca7a2de59, type: 3}
 --- !u!1 &644703077
 GameObject:
   m_ObjectHideFlags: 0
