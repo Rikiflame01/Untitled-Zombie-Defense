@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -27,6 +28,9 @@ public class PlayerControls : MonoBehaviour
     private CharacterController _characterController;
     private Vector2 _moveInput;
     [SerializeField] private LayerMask obstacleLayer;
+
+    //VFX
+    [SerializeField] private GameObject muzzleFlash;
 
     private void Awake()
     {
@@ -201,6 +205,7 @@ public class PlayerControls : MonoBehaviour
             return;
         }
 
+        // Get a bullet from the pool
         GameObject bullet = ObjectPooler.Instance.GetPooledObject(
             bulletPoolTag,
             shootingPoint.position,
@@ -229,6 +234,28 @@ public class PlayerControls : MonoBehaviour
         {
             Physics.IgnoreCollision(bulletCollider, playerCollider);
         }
-        SoundManager.Instance.PlaySFX("shoot",1.2f);
+
+        SoundManager.Instance.PlaySFX("shoot", 1.2f);
+
+        if (muzzleFlash != null)
+        {
+            ParticleSystem ps = muzzleFlash.GetComponent<ParticleSystem>();
+            if (ps != null)
+            {
+                ps.Play();
+            }
+
+            Light flashLight = muzzleFlash.GetComponent<Light>();
+            if (flashLight != null)
+            {
+                flashLight.enabled = true;
+                StartCoroutine(DisableLightAfterDelay(flashLight, 0.15f));
+            }
+        }
+    }
+    private IEnumerator DisableLightAfterDelay(Light light, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        light.enabled = false;
     }
 }
