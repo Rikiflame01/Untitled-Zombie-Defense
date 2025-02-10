@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WallDestroyHandler : MonoBehaviour
@@ -58,12 +59,18 @@ public class WallDestroyHandler : MonoBehaviour
 
     private IEnumerator DestroyWall(GameObject obj)
     {
+        List<Transform> children = new List<Transform>();
+        for (int i = 0; i < obj.transform.childCount; i++)
+        {
+            children.Add(obj.transform.GetChild(i));
+        }
+        foreach (Transform child in children)
+        {
+            Destroy(child.gameObject);
+        }
+        NavMeshManager.Instance.RebuildNavMesh();
         CameraShake.Instance.ShakeCamera();
         yield return new WaitForSeconds(3);
         Destroy(obj);
-    }
-    void OnDisable()
-    {
-        NavMeshManager.Instance.RebuildNavMesh();
     }
 }

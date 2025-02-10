@@ -14,6 +14,9 @@ public class BaseMeleeEnemy : MonoBehaviour
         AttackPlayer
     }
 
+    [Header("Grid Utility Reference")]
+    [SerializeField] private AIGridUtility gridUtility;
+
     [Header("Player Settings")]
     [SerializeField] private Transform player;
     [SerializeField] private float detectionRange = 50f;
@@ -52,11 +55,20 @@ public class BaseMeleeEnemy : MonoBehaviour
     private Transform currentObstacleTarget;
     private Coroutine destructibleCheckCoroutine;
 
+    private float stuckStartTime = 0f;
+    private const float STUCK_THRESHOLD = 5f;
+
+    private float nextPathResetTime = 0f;
+    private const float pathResetCooldown = 1f;
+
+    private float lastDestinationUpdateTime = 0f;
+
     private void Awake()
     {
+        gridUtility = FindFirstObjectByType<AIGridUtility>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         navMeshAgent.autoBraking = false;
-        navMeshAgent.autoRepath = false;
+        navMeshAgent.autoRepath = true;
         navMeshAgent.speed = moveSpeed;
         navMeshAgent.stoppingDistance = stoppingDistance;
 
@@ -66,12 +78,42 @@ public class BaseMeleeEnemy : MonoBehaviour
             if (p != null)
                 player = p.transform;
         }
-
     }
 
     private void Start()
     {
         TransitionToState(AIState.CheckPath);
+    }
+
+        private void OnEnable()
+    {
+        ActionManager.OnWallDestroyed += OnWallDestroyedHandler;
+    }
+
+
+    private void OnDisable()
+    {
+        ActionManager.OnWallDestroyed -= OnWallDestroyedHandler;
+    }
+    private void OnWallDestroyedHandler()
+    {
+        Debug.Log("Wall destroyed event received, checking player surround status.");
+        if (gridUtility != null)
+        {
+            if (!gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
+            {
+                Debug.Log("Player is no longer surrounded, updating path.");
+                TransitionToState(AIState.CheckPath);
+            }
+            else
+            {
+                Debug.Log("Player is still surrounded, continuing to attack obstacles.");
+                if (currentState != AIState.AttackObstacle)
+                {
+                    StartCoroutine(CheckForDestructibleObjects());
+                }
+            }
+        }
     }
 
     private void Update()
@@ -95,22 +137,106 @@ public class BaseMeleeEnemy : MonoBehaviour
                 break;
         }
     }
-
     private void UpdateCheckPath()
     {
         float distToPlayer = Vector3.Distance(transform.position, player.position);
         if (distToPlayer > detectionRange)
         {
             navMeshAgent.ResetPath();
+            Debug.Log("Player out of detection range, resetting path.");
             return;
         }
+
+        if (gridUtility != null)
+        {
+            if (gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
+            {
+                Debug.Log("Player is surrounded, looking for obstacles to attack.");
+                StartCoroutine(CheckForDestructibleObjects());
+                MoveTowardsPotentialObstacle();
+                return;
+            }
+        }
+
         navMeshAgent.SetDestination(player.position);
         TransitionToState(AIState.ChasePlayer);
+        Debug.Log("Player is not surrounded, transitioning to ChasePlayer.");
+    }    
+    private void MoveTowardsPotentialObstacle()
+    {
+        if (destructibleObjects.Count > 0)
+        {
+            Transform nearestObstacle = GetNearestDestructibleObject();
+            if (nearestObstacle != null)
+            {
+                navMeshAgent.SetDestination(nearestObstacle.position);
+                Debug.Log("Moving towards nearest obstacle.");
+            }
+            else
+            {
+                Vector3 randomPoint = transform.position + new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
+                navMeshAgent.SetDestination(randomPoint);
+                Debug.Log("No specific obstacle found, moving randomly.");
+            }
+        }
+        else
+        {
+            Debug.Log("No destructible objects detected. Moving randomly.");
+            Vector3 randomPoint = transform.position + new Vector3(Random.Range(-10f, 10f), 0, Random.Range(-10f, 10f));
+            navMeshAgent.SetDestination(randomPoint);
+        }
     }
 
+    private Transform GetNearestDestructibleObject()
+    {
+        Transform closest = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        Vector3 currentPosition = transform.position;
+        foreach (Transform potentialTarget in destructibleObjects)
+        {
+            if (potentialTarget != null)
+            {
+                Vector3 directionToTarget = potentialTarget.position - currentPosition;
+                float dSqrToTarget = directionToTarget.sqrMagnitude;
+                if (dSqrToTarget < closestDistanceSqr)
+                {
+                    closestDistanceSqr = dSqrToTarget;
+                    closest = potentialTarget;
+                }
+            }
+        }
+        return closest;
+    }
     private void UpdateChasePlayer()
     {
         navMeshAgent.SetDestination(player.position);
+
+        if (navMeshAgent.remainingDistance < navMeshAgent.stoppingDistance + 0.4f)
+        {
+            if (stuckStartTime == 0f)
+            {
+                stuckStartTime = Time.time;
+            }
+            else if (Time.time - stuckStartTime > STUCK_THRESHOLD)
+            {
+                Debug.Log("Enemy seems stuck. Resetting path.");
+                stuckStartTime = 0f;
+
+                if (gridUtility != null)
+                {
+                    if (gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
+                    {
+                        Debug.Log("Player is surrounded while chasing, looking for obstacles.");
+                        TransitionToState(AIState.CheckPath); // Or directly to AttackObstacle if possible
+                        return;
+                    }
+                }
+            }
+        }
+        else
+        {
+            stuckStartTime = 0f;
+        }
 
         float distToPlayer = Vector3.Distance(transform.position, player.position);
         if (distToPlayer <= attackRange && Time.time - lastAttackTime >= attackCooldown)
@@ -119,6 +245,45 @@ public class BaseMeleeEnemy : MonoBehaviour
         }
     }
 
+    private IEnumerator CheckForDestructibleObjects()
+    {
+            WaitForSeconds wait = new WaitForSeconds(1f / destructibleObjectCheckRate);
+            Vector3[] corners = new Vector3[2];
+
+            while (true) 
+            {
+                if (currentState != AIState.AttackObstacle && currentState != AIState.AttackPlayer)
+                {
+                    int cornerCount = navMeshAgent.path.GetCornersNonAlloc(corners);
+                    if (cornerCount > 1)
+                    {
+                    lastRayOrigin = corners[0] + Vector3.up * raycastEyeHeight;
+                    lastRayDirection = (corners[1] - corners[0]).normalized;
+
+                    Debug.DrawRay(lastRayOrigin, lastRayDirection * destructibleCheckDistance, Color.magenta, 0.5f);
+
+                    if (Physics.Raycast(lastRayOrigin, lastRayDirection, out RaycastHit hit, destructibleCheckDistance, obstacleLayer, QueryTriggerInteraction.Collide))
+                    {
+                        Health potential = hit.collider.GetComponentInParent<Health>();
+                        if (potential != null)
+                        {
+                            Debug.Log($"Destructible object found: {potential.gameObject.name}");
+                            currentObstacleTarget = potential.transform;
+                            SubscribeToObstacleDeath(currentObstacleTarget);
+                            TransitionToState(AIState.AttackObstacle);
+                            yield break;
+                        }
+                    }
+
+                    if (gridUtility != null && gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
+                    {
+                        Debug.Log("Player surrounded, continuing to look for obstacles to destroy.");
+                    }
+                }
+            }
+            yield return wait;
+        }
+    }
     private void UpdateAttackPlayer()
     {
         navMeshAgent.isStopped = true;
@@ -134,27 +299,42 @@ public class BaseMeleeEnemy : MonoBehaviour
         }
     }
 
-    private void UpdateAttackObstacle()
+private void UpdateAttackObstacle()
+{
+    if (currentObstacleTarget == null || !currentObstacleTarget.gameObject.activeInHierarchy)
     {
-        navMeshAgent.isStopped = false;
-        if (currentObstacleTarget == null || !currentObstacleTarget.gameObject.activeInHierarchy)
-        {
-            TransitionToState(AIState.CheckPath);
-            return;
-        }
-
-        float distToObstacle = Vector3.Distance(transform.position, currentObstacleTarget.position);
-        if (distToObstacle <= attackRange && Time.time - lastAttackTime >= attackCooldown)
-        {
-            navMeshAgent.isStopped = true;
-            AttackObstacle();
-        }
-        else
-        {
-            navMeshAgent.SetDestination(currentObstacleTarget.position);
-        }
+        Debug.Log("Current obstacle target is invalid or destroyed.");
+        TransitionToState(AIState.CheckPath);
+        return;
     }
 
+    float distToObstacle = Vector3.Distance(transform.position, currentObstacleTarget.position);
+    if (distToObstacle <= attackRange && Time.time - lastAttackTime >= attackCooldown)
+    {
+        navMeshAgent.isStopped = true;
+        AttackObstacle();
+    }
+    else
+    {
+        navMeshAgent.isStopped = false;
+        
+        if (Time.time - lastDestinationUpdateTime >= 3f)
+        {
+            navMeshAgent.SetDestination(currentObstacleTarget.position);
+            lastDestinationUpdateTime = Time.time;
+        }
+        
+        if (navMeshAgent.remainingDistance < 0.1f && navMeshAgent.velocity.sqrMagnitude < 0.1f)
+        {
+            if (Time.time > nextPathResetTime)
+            {
+                Debug.Log("Agent seems stuck, remaining distance: " + navMeshAgent.remainingDistance + ", velocity: " + navMeshAgent.velocity);
+                navMeshAgent.ResetPath();
+                nextPathResetTime = Time.time + pathResetCooldown;
+            }
+        }
+    }
+}
     private void AttackPlayer()
     {
         Collider[] hits = Physics.OverlapSphere(transform.position, sphereCheckRadius, playerLayer);
@@ -216,50 +396,6 @@ public class BaseMeleeEnemy : MonoBehaviour
         }
     }
 
-    private IEnumerator CheckForDestructibleObjects()
-    {
-        WaitForSeconds wait = new WaitForSeconds(1f / destructibleObjectCheckRate);
-        Vector3[] corners = new Vector3[2];
-
-        while (currentState == AIState.ChasePlayer)
-        {
-            int cornerCount = navMeshAgent.path.GetCornersNonAlloc(corners);
-            Debug.Log($"Corner count: {cornerCount}");
-            if (cornerCount > 1)
-            {
-                lastRayOrigin = corners[0] + Vector3.up * raycastEyeHeight;
-                lastRayDirection = (corners[1] - corners[0]).normalized;
-
-                Debug.DrawRay(lastRayOrigin, lastRayDirection * destructibleCheckDistance, Color.magenta, 0.5f);
-
-                if (Physics.Raycast(lastRayOrigin, lastRayDirection, out RaycastHit hit, destructibleCheckDistance, obstacleLayer, QueryTriggerInteraction.Collide))
-                {
-                    Health potential = hit.collider.GetComponentInParent<Health>();
-                    if (potential != null)
-                    {
-                        if (HasValidPathToPlayer())
-                        {
-                            Debug.Log("Path to player is clear; no need to attack obstacle.");
-                        }
-                        else
-                        {
-                            Debug.Log($"Destructible object found: {potential.gameObject.name}");
-                            currentObstacleTarget = potential.transform;
-                            SubscribeToObstacleDeath(currentObstacleTarget);
-                            TransitionToState(AIState.AttackObstacle);
-                            yield break;
-                        }
-                    }
-                }
-                else
-                {
-                    Debug.Log("Raycast did not hit any obstacle.");
-                }
-            }
-            yield return wait;
-        }
-    }
-
     private void SubscribeToObstacleDeath(Transform obstacle)
     {
         if (obstacle != null)
@@ -284,9 +420,10 @@ public class BaseMeleeEnemy : MonoBehaviour
     {
         if (currentObstacleTarget != null && obstacle == currentObstacleTarget.gameObject)
         {
+            Debug.Log("Obstacle died, transitioning to CheckPath");
             UnsubscribeFromObstacleDeath(currentObstacleTarget);
             currentObstacleTarget = null;
-            StartCoroutine(DelayedPathCheck());
+            TransitionToState(AIState.CheckPath);
         }
     }
 
@@ -300,12 +437,19 @@ public class BaseMeleeEnemy : MonoBehaviour
 
         currentState = newState;
 
-        if (newState == AIState.ChasePlayer)
+        if (newState == AIState.ChasePlayer || newState == AIState.CheckPath)
         {
             navMeshAgent.isStopped = false;
             if (destructibleCheckCoroutine == null)
                 destructibleCheckCoroutine = StartCoroutine(CheckForDestructibleObjects());
         }
+    }
+
+    private IEnumerator DelayedChaseStart()
+    {
+        yield return new WaitForSeconds(1f);
+        if (destructibleCheckCoroutine == null)
+            destructibleCheckCoroutine = StartCoroutine(CheckForDestructibleObjects());
     }
 
     private void OnDrawGizmos()

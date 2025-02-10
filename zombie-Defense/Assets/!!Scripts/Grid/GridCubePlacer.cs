@@ -38,7 +38,7 @@ public class GridCubePlacer : MonoBehaviour
     private InputAction clickAction;
     private GameObject previewInstance;
 
-    private bool[,] occupiedCells;
+    public bool[,] occupiedCells;
     
     private Renderer previewRenderer;
     private Color validPreviewColor = new Color(1f, 1f, 1f, 0.5f);

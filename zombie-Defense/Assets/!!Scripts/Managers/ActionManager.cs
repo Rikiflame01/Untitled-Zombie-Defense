@@ -12,6 +12,13 @@ public static class ActionManager
     public static event Action OnPaused;
     public static event Action OnUnpaused;
 
+    public static event Action OnWallDestroyed;
+
+    public static void InvokeWallDestroyed()
+    {
+        OnWallDestroyed?.Invoke();
+    }
+    
     public static void InvokeDefenseStart()
     {
         OnDefenseStart?.Invoke();
