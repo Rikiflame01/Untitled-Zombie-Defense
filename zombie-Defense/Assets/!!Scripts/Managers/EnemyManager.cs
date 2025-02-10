@@ -116,7 +116,7 @@ public class EnemySpawner : MonoBehaviour
         {
             GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
 
-            if (currentEnemyCount == 1 && enemies.Length == 0)
+            if (currentEnemyCount >= 1 && enemies.Length == 0)
             {
                 Debug.LogWarning("Enemy count mismatch detected! Correcting enemy count to 0.");
                 currentEnemyCount = 0;

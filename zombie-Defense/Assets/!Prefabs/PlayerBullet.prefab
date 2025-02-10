@@ -213,3 +213,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 613d64d4487ab484c854b3abf81c424e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bloodBurstPrefab: {fileID: 308744921247794867, guid: f877ec8f6a568d84eb8231cc21af00f9, type: 3}

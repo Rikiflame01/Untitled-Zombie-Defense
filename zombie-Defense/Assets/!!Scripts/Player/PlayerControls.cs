@@ -194,8 +194,19 @@ public class PlayerControls : MonoBehaviour
         if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
             return;
 
+        PlayerReload reload = GetComponent<PlayerReload>();
+        if (reload != null)
+        {
+            if (!reload.TryShoot())
+            {
+                SoundManager.Instance.PlaySFX("trigger", 2f);
+                return;
+            }
+        }
+        
         Shoot();
     }
+
 
     private void Shoot()
     {

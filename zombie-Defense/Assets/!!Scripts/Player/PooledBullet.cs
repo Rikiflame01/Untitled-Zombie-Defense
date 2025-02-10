@@ -1,24 +1,25 @@
-using System;
 using System.Collections;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PooledBullet : MonoBehaviour
 {
     private Rigidbody rb;
-
+    
+    [SerializeField] private GameObject bloodBurstPrefab;
+    
     private bool hitTarget = false;
+
     private void OnEnable()
     {
         rb = GetComponent<Rigidbody>();
+        StartCoroutine(DespawnBullet());
     }
 
     private IEnumerator DespawnBullet()
     {
-        yield return new WaitForSeconds(3);
-        ReturnToPool(); 
+        yield return new WaitForSeconds(3f);
+        ReturnToPool();
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -27,34 +28,37 @@ public class PooledBullet : MonoBehaviour
         {
             hitTarget = true;
             Health health = collision.gameObject.GetComponent<Health>();
-            
             if (health != null)
             {
                 health.TakeDamage(34);
-                SoundManager.Instance.PlaySFX("bulletHit",0.7f);
+                SoundManager.Instance.PlaySFX("bulletHit", 0.7f);
+
+                if (health.currentHealth <= 0)
+                {
+                    ContactPoint contact = collision.contacts[0];
+                    Vector3 spawnPosition = contact.point;
+                    
+                    GameObject playerObj = GameObject.FindWithTag("Player");
+                    if (playerObj != null)
+                    {
+                        Vector3 directionAwayFromPlayer = (spawnPosition - playerObj.transform.position).normalized;
+                        
+                        Quaternion spawnRotation = Quaternion.LookRotation(directionAwayFromPlayer);
+                        
+                        Instantiate(bloodBurstPrefab, spawnPosition, spawnRotation);
+                    }
+                    else
+                    {
+                        Instantiate(bloodBurstPrefab, spawnPosition, Quaternion.identity);
+                    }
+                }
             }
-            hitTarget = false;
             StopAllCoroutines();
             ReturnToPool();
         }
-        else{
-    if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
-    {
-        hitTarget = true;
-        Health health = collision.gameObject.GetComponent<Health>();
-        
-        if (health != null)
+        else if (!hitTarget && gameObject.activeSelf)
         {
-            health.TakeDamage(34);
-        }
-        hitTarget = false;
-        StopAllCoroutines();
-        ReturnToPool();
-    }
-            else if (hitTarget == false && this.gameObject.activeSelf)
-            {
-                StartCoroutine(DespawnBullet());
-            }
+            StartCoroutine(DespawnBullet());
         }
     }
 
@@ -67,5 +71,4 @@ public class PooledBullet : MonoBehaviour
         }
         ObjectPooler.Instance.ReturnToPool(gameObject);
     }
-
 }
