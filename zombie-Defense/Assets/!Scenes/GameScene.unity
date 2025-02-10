@@ -4068,6 +4068,8 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: ed042c87951ed40268592d7ca7a2de59, type: 3}
   - name: zombieDeath
     clip: {fileID: 8300000, guid: 0303965853d4a43f1a077ffde9c3d1e3, type: 3}
+  - name: zombieDeath2
+    clip: {fileID: 8300000, guid: 0e84038961d6c4b72af49c11e1553b9e, type: 3}
 --- !u!1 &644703077
 GameObject:
   m_ObjectHideFlags: 0

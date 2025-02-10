@@ -110,6 +110,10 @@ public class Health : MonoBehaviour, IHealth
         if (gameObject.layer == LayerMask.NameToLayer("Enemy")){
         ScoreManager.Instance.OnEnemyDeath(gameObject);
         SoundManager.Instance.PlaySFX("zombieDeath", 2f);
+        int randomValue = UnityEngine.Random.Range(1, 101);
+        if (randomValue > 66){
+            SoundManager.Instance.PlaySFX("zombieDeath2", 2f);
+        }
         }
         OnDied?.Invoke(gameObject);
     }
