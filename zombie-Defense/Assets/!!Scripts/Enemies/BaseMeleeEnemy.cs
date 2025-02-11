@@ -107,11 +107,7 @@ public class BaseMeleeEnemy : MonoBehaviour
             }
             else
             {
-                Debug.Log("Player is still surrounded, continuing to attack obstacles.");
-                if (currentState != AIState.AttackObstacle)
-                {
-                    StartCoroutine(CheckForDestructibleObjects());
-                }
+                StartCoroutine(CheckForDestructibleObjects());
             }
         }
     }
@@ -139,14 +135,6 @@ public class BaseMeleeEnemy : MonoBehaviour
     }
     private void UpdateCheckPath()
     {
-        float distToPlayer = Vector3.Distance(transform.position, player.position);
-        if (distToPlayer > detectionRange)
-        {
-            navMeshAgent.ResetPath();
-            Debug.Log("Player out of detection range, resetting path.");
-            return;
-        }
-
         if (gridUtility != null)
         {
             if (gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
@@ -209,34 +197,38 @@ public class BaseMeleeEnemy : MonoBehaviour
     }
     private void UpdateChasePlayer()
     {
-        navMeshAgent.SetDestination(player.position);
-
-        if (navMeshAgent.remainingDistance < navMeshAgent.stoppingDistance + 0.4f)
+        if (!navMeshAgent.pathPending && 
+        Vector3.Distance(navMeshAgent.destination, player.position) > 0.5f)
         {
-            if (stuckStartTime == 0f)
-            {
-                stuckStartTime = Time.time;
-            }
-            else if (Time.time - stuckStartTime > STUCK_THRESHOLD)
-            {
-                Debug.Log("Enemy seems stuck. Resetting path.");
-                stuckStartTime = 0f;
+            navMeshAgent.SetDestination(player.position);
+        }
 
-                if (gridUtility != null)
-                {
-                    if (gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
-                    {
-                        Debug.Log("Player is surrounded while chasing, looking for obstacles.");
-                        TransitionToState(AIState.CheckPath); // Or directly to AttackObstacle if possible
-                        return;
-                    }
-                }
-            }
-        }
-        else
-        {
-            stuckStartTime = 0f;
-        }
+        // if (navMeshAgent.remainingDistance < navMeshAgent.stoppingDistance + 0.4f)
+        // {
+        //     if (stuckStartTime == 0f)
+        //     {
+        //         stuckStartTime = Time.time;
+        //     }
+        //     else if (Time.time - stuckStartTime > STUCK_THRESHOLD)
+        //     {
+        //         Debug.Log("Enemy seems stuck. Resetting path.");
+        //         stuckStartTime = 0f;
+
+        //         if (gridUtility != null)
+        //         {
+        //             if (gridUtility.IsPlayerSurrounded(gridUtility.GetPlayerCellX(), gridUtility.GetPlayerCellZ()))
+        //             {
+        //                 Debug.Log("Player is surrounded while chasing, looking for obstacles.");
+        //                 TransitionToState(AIState.CheckPath); // Or directly to AttackObstacle if possible
+        //                 return;
+        //             }
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     stuckStartTime = 0f;
+        // }
 
         float distToPlayer = Vector3.Distance(transform.position, player.position);
         if (distToPlayer <= attackRange && Time.time - lastAttackTime >= attackCooldown)
@@ -250,8 +242,6 @@ public class BaseMeleeEnemy : MonoBehaviour
             WaitForSeconds wait = new WaitForSeconds(1f / destructibleObjectCheckRate);
             Vector3[] corners = new Vector3[2];
 
-            while (true) 
-            {
                 if (currentState != AIState.AttackObstacle && currentState != AIState.AttackPlayer)
                 {
                     int cornerCount = navMeshAgent.path.GetCornersNonAlloc(corners);
@@ -280,13 +270,11 @@ public class BaseMeleeEnemy : MonoBehaviour
                         Debug.Log("Player surrounded, continuing to look for obstacles to destroy.");
                     }
                 }
-            }
             yield return wait;
         }
     }
     private void UpdateAttackPlayer()
     {
-        navMeshAgent.isStopped = true;
         float distToPlayer = Vector3.Distance(transform.position, player.position);
         if (distToPlayer <= attackRange && Time.time - lastAttackTime >= attackCooldown)
         {
@@ -294,7 +282,6 @@ public class BaseMeleeEnemy : MonoBehaviour
         }
         else if (distToPlayer > attackRange)
         {
-            navMeshAgent.isStopped = false;
             TransitionToState(AIState.ChasePlayer);
         }
     }
@@ -311,13 +298,10 @@ private void UpdateAttackObstacle()
     float distToObstacle = Vector3.Distance(transform.position, currentObstacleTarget.position);
     if (distToObstacle <= attackRange && Time.time - lastAttackTime >= attackCooldown)
     {
-        navMeshAgent.isStopped = true;
         AttackObstacle();
     }
     else
     {
-        navMeshAgent.isStopped = false;
-        
         if (Time.time - lastDestinationUpdateTime >= 3f)
         {
             navMeshAgent.SetDestination(currentObstacleTarget.position);

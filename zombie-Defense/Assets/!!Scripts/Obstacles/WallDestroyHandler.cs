@@ -18,6 +18,7 @@ public class WallDestroyHandler : MonoBehaviour
 
     private void HandleWallDeath(GameObject obj)
     {
+        ActionManager.InvokeWallDestroyed();
         var occupant = GetComponent<WallOccupant>();
         if (occupant != null)
         {
@@ -59,6 +60,7 @@ public class WallDestroyHandler : MonoBehaviour
 
     private IEnumerator DestroyWall(GameObject obj)
     {
+        SetLayerRecursively(gameObject, LayerMask.NameToLayer("DoNotBake"));
         List<Transform> children = new List<Transform>();
         for (int i = 0; i < obj.transform.childCount; i++)
         {
@@ -74,4 +76,16 @@ public class WallDestroyHandler : MonoBehaviour
         yield return new WaitForSeconds(3);
         Destroy(obj);
     }
+
+    void SetLayerRecursively(GameObject obj, int newLayer)
+{
+    if (obj == null)
+        return;
+    
+    obj.layer = newLayer;
+    foreach (Transform child in obj.transform)
+    {
+        SetLayerRecursively(child.gameObject, newLayer);
+    }
+}
 }

@@ -15205,7 +15205,7 @@ MonoBehaviour:
   poolItems:
   - tag: Bullet
     prefab: {fileID: 8473089534966043382, guid: f1efc650154e50046b7f5bd597452402, type: 3}
-    size: 50
+    size: 200
 --- !u!1 &2100767772
 GameObject:
   m_ObjectHideFlags: 0

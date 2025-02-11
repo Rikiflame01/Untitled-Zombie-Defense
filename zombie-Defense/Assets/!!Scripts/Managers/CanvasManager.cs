@@ -33,7 +33,7 @@ public class CanvasManager : MonoBehaviour
     private void EnableDeathCanvas(GameObject @object)
     {
         if (@object.CompareTag("Player")){
-            SoundManager.Instance.PlaySFX("playerDeath",1f);
+            SoundManager.Instance.PlaySFX("playerDeath",2f);
             endGameCanvas.SetActive(true);
         }
     }
