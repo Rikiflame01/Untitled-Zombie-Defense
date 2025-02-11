@@ -128,7 +128,7 @@ public class ScoreManager : MonoBehaviour
             enemyDeathText.text = enemyDeathCount.ToString();
 
         if (roundTimeText != null)
-            roundTimeText.text = roundDuration.ToString("F2") + "s";
+            roundTimeText.text = roundDuration.ToString("F0") + "s";
 
         if (playerDamageText != null)
             playerDamageText.text = (playerDamaged ? "Yes - 1 " : "No + 3");
