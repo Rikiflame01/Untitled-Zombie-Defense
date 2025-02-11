@@ -5106,6 +5106,91 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1452471473}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &721417238
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 721417239}
+  - component: {fileID: 721417240}
+  m_Layer: 0
+  m_Name: UpgradeCards
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &721417239
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 721417238}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1006767568}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: -645, y: 0}
+  m_SizeDelta: {x: 100, y: 100}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &721417240
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 721417238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ee597423afa05d439f45fd27d2d2e19, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  emptyCardData:
+  - prefab: {fileID: 2968826241970749236, guid: 3084eba85185e7a4d9e70286f74a9194, type: 3}
+    maxSpawns: -1
+    currentSpawns: 0
+  standardUpgradeCardData:
+  - prefab: {fileID: 3630370732846495846, guid: 3bfa105e4c8aadd4c917b8d9751858c2, type: 3}
+    maxSpawns: 6
+    currentSpawns: 0
+  - prefab: {fileID: 2195845395079613560, guid: 809e532595668d647851201689b87281, type: 3}
+    maxSpawns: 4
+    currentSpawns: 0
+  utilityUpgradeCardData:
+  - prefab: {fileID: 8225126230713617502, guid: 9bbc8dc0d6f58da4a95b329a0d9413fc, type: 3}
+    maxSpawns: -1
+    currentSpawns: 0
+  - prefab: {fileID: 4575724314508132781, guid: 1e21e87b2ccb13145959f227c74daf23, type: 3}
+    maxSpawns: -1
+    currentSpawns: 0
+  - prefab: {fileID: 7687684915156886682, guid: 3888f50e7edb79845b316538dda24227, type: 3}
+    maxSpawns: -1
+    currentSpawns: 0
+  rareUpgradeCardData:
+  - prefab: {fileID: 2149065021520262556, guid: 99decb6446ff514489c2923f484d0fc1, type: 3}
+    maxSpawns: 1
+    currentSpawns: 0
+  - prefab: {fileID: 390210880689180877, guid: f389fa4b5765d54488c06bcffa7a2775, type: 3}
+    maxSpawns: 1
+    currentSpawns: 0
+  cardParent: {fileID: 721417239}
+  totalCards: 3
+  spacing: 675
+  standardChance: 0.4
+  utilityChance: 0.4
+  rareChance: 0.2
+  slideInDuration: 0.3
+  slideInDelayBetweenCards: 0.4
+  slideInOffset: 1200
 --- !u!1 &730167339
 GameObject:
   m_ObjectHideFlags: 0
@@ -6637,6 +6722,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1114066490}
+  - {fileID: 721417239}
   - {fileID: 1480787061}
   - {fileID: 1751535975}
   m_Father: {fileID: 1613922567}
