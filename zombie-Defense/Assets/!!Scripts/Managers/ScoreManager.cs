@@ -1,11 +1,12 @@
 using UnityEngine;
 using System;
+using System.Collections;
 using TMPro;
+using DG.Tweening;
 
 public class ScoreManager : MonoBehaviour
 {
     public static ScoreManager Instance { get; private set; }
-
     private int enemyDeathCount = 0;
     private float roundStartTime;
     private bool playerDamaged = false;
@@ -26,7 +27,6 @@ public class ScoreManager : MonoBehaviour
             Destroy(gameObject);
             return;
         }
-
         Instance = this;
     }
 
@@ -55,23 +55,29 @@ public class ScoreManager : MonoBehaviour
     private void StartRound()
     {
         totalScore = 0;
-        totalScoreText.text = "0";
         enemyDeathCount = 0;
         playerDamaged = false;
         roundStartTime = Time.time;
-        UpdateUI();
+        if (enemyDeathText != null) enemyDeathText.text = "0";
+        if (roundTimeText != null) roundTimeText.text = "0s";
+        if (playerDamageText != null) playerDamageText.text = "0";
+        if (totalScoreText != null) totalScoreText.text = "0";
+        UpdateScoreUI();
     }
 
     private void EndRound()
     {
         roundDuration = Time.time - roundStartTime;
-        UpdateUI();
+        int damagePenalty = playerDamaged ? -1 : 3;
+        int enemyScore = enemyDeathCount;
+        float timePenalty = Mathf.Max(0, roundDuration / 5);
+        totalScore = Mathf.RoundToInt(damagePenalty + enemyScore * 1.5f - timePenalty);
+        StartCoroutine(AnimateScoreSequence());
     }
 
     private void OnPlayerDied(GameObject player)
     {
         playerDamaged = true;
-        UpdateUI();
     }
 
     private void OnPlayerHealthChanged(int currentHealth, int maxHealth)
@@ -85,13 +91,11 @@ public class ScoreManager : MonoBehaviour
     public void OnEnemyDeath(GameObject enemy)
     {
         enemyDeathCount++;
-        UpdateUI();
     }
 
     public void DecreaseTotalScore(int amount)
     {
         if (totalScore == 0) return;
-        
         totalScore -= amount;
         UpdateScoreUI();
     }
@@ -100,13 +104,10 @@ public class ScoreManager : MonoBehaviour
     {
         if (totalScoreText != null)
             totalScoreText.text = totalScore.ToString();
-
         GameObject buildPreviewObject = FindObjectByTag("TxtBuildPreview");
-
         if (buildPreviewObject != null)
         {
             TextMeshProUGUI tmpComponent = buildPreviewObject.GetComponent<TextMeshProUGUI>();
-
             if (tmpComponent != null)
             {
                 tmpComponent.text = totalScore.ToString();
@@ -122,24 +123,53 @@ public class ScoreManager : MonoBehaviour
         }
     }
 
-    private void UpdateUI()
+    private IEnumerator AnimateScoreSequence()
     {
         if (enemyDeathText != null)
-            enemyDeathText.text = enemyDeathCount.ToString();
-
+        {
+            yield return StartCoroutine(AnimateCountUp(enemyDeathText, enemyDeathCount, "", ""));
+        }
         if (roundTimeText != null)
-            roundTimeText.text = roundDuration.ToString("F0") + "s";
-
+        {
+            int roundTimeSeconds = Mathf.RoundToInt(roundDuration);
+            yield return StartCoroutine(AnimateCountUp(roundTimeText, roundTimeSeconds, "", "s"));
+        }
         if (playerDamageText != null)
-            playerDamageText.text = (playerDamaged ? "Yes - 1 " : "No + 3");
-
-        int damagePenalty = playerDamaged ? -1 : 3;
-        int enemyScore = enemyDeathCount;
-        float timePenalty = Mathf.Max(0, roundDuration / 5);
-
-        totalScore = Mathf.RoundToInt(damagePenalty + enemyScore * 1.5f - timePenalty);
-        
+        {
+            int damageValue = playerDamaged ? 1 : 3;
+            string prefix = playerDamaged ? "Yes - " : "No + ";
+            yield return StartCoroutine(AnimateCountUp(playerDamageText, damageValue, prefix, ""));
+        }
+        if (totalScoreText != null)
+        {
+            yield return StartCoroutine(AnimateCountUp(totalScoreText, totalScore, "", ""));
+        }
         UpdateScoreUI();
+    }
+
+    private IEnumerator AnimateCountUp(TextMeshProUGUI textObj, int finalValue, string prefix, string suffix)
+    {
+        int currentValue = 0;
+        Vector3 originalScale = textObj.transform.localScale;
+        textObj.text = prefix + "0" + suffix;
+        float allocatedTime = 1.25f;
+        float popDuration = 0.2f;
+        float countDuration = allocatedTime - popDuration;
+        float delayPerCount = finalValue > 0 ? countDuration / finalValue : 0f;
+        while (currentValue < finalValue)
+        {
+            currentValue++;
+            textObj.text = prefix + currentValue.ToString() + suffix;
+            SoundManager.Instance.PlaySFX("scoreCount", 1f);
+            textObj.transform.DOShakePosition(0.1f, new Vector3(5, 5, 0));
+            yield return new WaitForSeconds(delayPerCount);
+        }
+        SoundManager.Instance.PlaySFX("scoreEnd", 1f);
+        textObj.transform.DOScale(originalScale * 1.2f, 0.1f).OnComplete(() =>
+        {
+            textObj.transform.DOScale(originalScale, 0.1f);
+        });
+        yield return new WaitForSeconds(popDuration);
     }
 
     private GameObject FindObjectByTag(string tag)

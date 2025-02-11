@@ -929,7 +929,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -172.13118, y: -84.79453, z: -270.5255, w: 80.91038}
+  m_margin: {x: -179.78609, y: -84.79453, z: -270.5255, w: 80.91038}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -2464,8 +2464,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2505,7 +2505,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: -84.79453, z: -364.6178, w: 80.91038}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &332045234
@@ -4309,6 +4309,10 @@ MonoBehaviour:
     clip: {fileID: 8300000, guid: 0e84038961d6c4b72af49c11e1553b9e, type: 3}
   - name: trigger
     clip: {fileID: 8300000, guid: e39ae4cf93826854eae7508e15a57d8a, type: 3}
+  - name: scoreCount
+    clip: {fileID: 8300000, guid: 327cd401755664b7382ca7761a1dd5d7, type: 3}
+  - name: scoreEnd
+    clip: {fileID: 8300000, guid: 5a2e5cbf168fb4855b0d805f41cf3ae0, type: 3}
 --- !u!1 &644703077
 GameObject:
   m_ObjectHideFlags: 0
@@ -4687,7 +4691,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 582, y: 6}
+  m_AnchoredPosition: {x: 581.65, y: 6}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &676142267
@@ -5804,8 +5808,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -5845,7 +5849,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: -84.79453, z: -364.6178, w: 80.91038}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &920833803
@@ -5979,7 +5983,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -124.38077, y: -84.79453, z: -334.4714, w: 0}
+  m_margin: {x: -150.33691, y: -84.79453, z: -334.4714, w: 0}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -12847,8 +12851,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 48
-  m_fontSizeBase: 48
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -12888,7 +12892,7 @@ MonoBehaviour:
   m_margin: {x: 0, y: -84.79453, z: -364.6178, w: 80.91038}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
-  m_hasFontAssetChanged: 1
+  m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
 --- !u!222 &1884404591
@@ -13300,7 +13304,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: -175.5041, y: -84.79453, z: -364.6178, w: 80.91038}
+  m_margin: {x: -181.22902, y: -84.79453, z: -364.6178, w: 80.91038}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0

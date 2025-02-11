@@ -26,7 +26,7 @@ public class CanvasManager : MonoBehaviour
     }
 
     private IEnumerator DisableCanvas(){
-        yield return new WaitForSeconds(5);
+        yield return new WaitForSeconds(5.5f);
         scorePanel.SetActive(false);
     }
 
