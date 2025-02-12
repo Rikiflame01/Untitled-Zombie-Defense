@@ -204,7 +204,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entityStats: {fileID: 11400000, guid: b0e3fc68f00d02e4e87bd1e024cab450, type: 2}
   floatingDamagePrefab: {fileID: 1159179087703213061, guid: d19d01ecbe7971e44ae7290fb5118373, type: 3}
-  currentHealth: 0
+  currentHealth: 30
 --- !u!114 &2236226964622858290
 MonoBehaviour:
   m_ObjectHideFlags: 0

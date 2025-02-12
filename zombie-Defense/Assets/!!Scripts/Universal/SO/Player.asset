@@ -15,7 +15,7 @@ MonoBehaviour:
   health: 100
   maxHealth: 100
   Gold: 0
-  damage: 10
+  damage: 34
   isPlayer: 1
   isMelee: 0
   isRanged: 0

@@ -6,13 +6,21 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
 
+
+    public EntityStats playerStats;
+    public EntityStats wallStats;
+
     void Start()
     {
+        playerStats.damage = 34;
+        wallStats.health = 30;
+        wallStats.maxHealth = 30;
         GameStateManager.Initialize();
         StartCoroutine(StartGameCoRoutine());
 
         ActionManager.OnCardChosen += ChosenCard;
     }
+
     void OnDisable()
     {
         ActionManager.OnCardChosen -= ChosenCard;
@@ -33,7 +41,8 @@ public class GameManager : MonoBehaviour
 
     #region Card Logic
 
-    private void ChosenCard(string cardName){{
+    private void ChosenCard(string cardName)
+    {
         switch(cardName)
         {
             case "Empty":
@@ -64,35 +73,90 @@ public class GameManager : MonoBehaviour
                 Debug.LogWarning("Unknown card chosen: " + cardName);
                 break;
         }
-    }}
+    }
 
     private void Empty(){
-        Debug.Log("empty logic executed");
+        Debug.Log("Empty logic executed");
         ActionManager.InvokeChooseCardEnd();
     }
 
-    private void HealPlayer(){
-        Debug.Log("heal player logic executed");
+    public static void HealPlayer()
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            Health playerHealth = player.GetComponent<Health>();
+            if (playerHealth != null)
+            {
+                int healAmount = playerHealth.MaxHealth - playerHealth.CurrentHealth;
+                playerHealth.Heal(healAmount);
+                Debug.Log("Player healed to full health.");
+            }
+            else
+            {
+                Debug.LogWarning("Player does not have a Health component.");
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Player not found in the scene.");
+        }
         ActionManager.InvokeChooseCardEnd();
     }
-    private void RepairWalls(){
-        Debug.Log("repair wall logic executed");
-    }    
-    private void FortifyWalls(){
-        Debug.Log("fortify walls logic executed");
+
+    public void RepairWalls()
+    {
+        GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
+        foreach (GameObject wall in walls)
+        {
+            Health wallHealth = wall.GetComponent<Health>();
+            if (wallHealth != null)
+            {
+                int healAmount = wallStats.maxHealth - wallHealth.CurrentHealth;
+                wallHealth.Heal(healAmount);
+                Debug.Log("Wall " + wall.name + " repaired to full health.");
+            }
+        }
+        ActionManager.InvokeChooseCardEnd();
+    }
+
+    public void FortifyWalls()
+    {
+        wallStats.maxHealth += 25;
+
+        GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
+        foreach (GameObject wall in walls)
+        {
+            Health wallHealth = wall.GetComponent<Health>();
+            if (wallHealth != null)
+            {
+                int healAmount = wallStats.maxHealth - wallHealth.CurrentHealth;
+                wallHealth.Heal(healAmount);
+            }
+        }
+        ActionManager.InvokeChooseCardEnd();
     }
 
     private void IncreaseClipSize(){
-        Debug.Log("Increase CS logic executed");
+        GameObject player = GameObject.FindWithTag("Player");
+        PlayerReload playerReload = player.GetComponent<PlayerReload>();
+        playerReload.maxShots += 5;
+        ActionManager.InvokeChooseCardEnd();
     }
+
     private void IncreaseDamage(){
         Debug.Log("Increase dmg logic executed");
+        playerStats.damage += 5;
+        ActionManager.InvokeChooseCardEnd();
     }
+
     private void Piercing(){
-        Debug.Log("piercing logic executed");
+        Debug.Log("Piercing logic executed");
+        ActionManager.InvokeChooseCardEnd();
     }
     private void Rifle(){
-        Debug.Log("rifle logic executed");
+        Debug.Log("Rifle logic executed");
+        ActionManager.InvokeChooseCardEnd();
     }
     #endregion
 }

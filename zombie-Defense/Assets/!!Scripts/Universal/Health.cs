@@ -29,7 +29,7 @@ public class Health : MonoBehaviour, IHealth
     public event Action<GameObject> OnDied;
 
     [Header("Entity Stats")]
-    [SerializeField] private EntityStats entityStats;
+    public EntityStats entityStats;
 
     [Header("Floating Damage")]
     [Tooltip("Floating damage prefab to display damage taken.")]
@@ -51,6 +51,7 @@ public class Health : MonoBehaviour, IHealth
         }
 
         currentHealth = entityStats.health;
+        RefreshHealthUI();
     }
 
     public void TakeDamage(int damage)
@@ -76,6 +77,10 @@ public class Health : MonoBehaviour, IHealth
             OnHealthDepleted?.Invoke();
             HandleDeath();
         }
+    }
+
+    public void RefreshHealthUI(){
+        OnHealthChanged?.Invoke(currentHealth, MaxHealth);
     }
 
     private void ShowFloatingDamage(int damage)

@@ -6793,7 +6793,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 1
   m_TargetDisplay: 0
 --- !u!1 &1012360569
 GameObject:
@@ -10712,6 +10712,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 2074386712}
   - {fileID: 1006767568}
   - {fileID: 242998266}
   - {fileID: 418986689}
@@ -10933,6 +10934,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2fbb9cb534f3f864ea9749b978ca527d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerStats: {fileID: 11400000, guid: 0c16584073903074388becd337a7158f, type: 2}
+  wallStats: {fileID: 11400000, guid: b0e3fc68f00d02e4e87bd1e024cab450, type: 2}
 --- !u!1 &1666115021
 GameObject:
   m_ObjectHideFlags: 0
@@ -15038,7 +15041,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 732675125}
-  m_Father: {fileID: 0}
+  m_Father: {fileID: 1613922567}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -21657,6 +21660,5 @@ SceneRoots:
   - {fileID: 330585546}
   - {fileID: 3101697541221883506}
   - {fileID: 1398261308}
-  - {fileID: 2074386712}
   - {fileID: 1555662785}
   - {fileID: 201461086}

@@ -12,7 +12,7 @@ public class PlayerReload : MonoBehaviour
 {
     [Header("Reload Settings")]
     [Tooltip("Number of shots allowed before reload.")]
-    [SerializeField] private int maxShots = 9;
+    [SerializeField] public int maxShots = 9;
     
     [Tooltip("Time (in seconds) required to reload.")]
     [SerializeField] private float reloadTime = 2f;

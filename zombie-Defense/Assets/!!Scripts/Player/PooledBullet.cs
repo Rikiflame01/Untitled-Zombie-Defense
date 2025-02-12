@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class PooledBullet : MonoBehaviour
 {
+    public EntityStats playerStats;
     private Rigidbody rb;
     
     [SerializeField] private GameObject bloodBurstPrefab;
@@ -30,7 +31,7 @@ public class PooledBullet : MonoBehaviour
             Health health = collision.gameObject.GetComponent<Health>();
             if (health != null)
             {
-                health.TakeDamage(34);
+                health.TakeDamage(playerStats.damage);
                 SoundManager.Instance.PlaySFX("bulletHit", 0.7f);
 
                 if (health.currentHealth <= 0)
