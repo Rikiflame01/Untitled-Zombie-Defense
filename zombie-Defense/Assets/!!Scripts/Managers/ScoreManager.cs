@@ -33,13 +33,13 @@ public class ScoreManager : MonoBehaviour
     private void OnEnable()
     {
         ActionManager.OnDefenseStart += StartRound;
-        ActionManager.OnDefenseStop += EndRound;
+        ActionManager.OnChooseCardEnd += EndRound;
     }
 
     private void OnDisable()
     {
         ActionManager.OnDefenseStart -= StartRound;
-        ActionManager.OnDefenseStop -= EndRound;
+        ActionManager.OnChooseCardEnd -= EndRound;
     }
 
     private void Start()
@@ -145,6 +145,7 @@ public class ScoreManager : MonoBehaviour
             yield return StartCoroutine(AnimateCountUp(totalScoreText, totalScore, "", ""));
         }
         UpdateScoreUI();
+        ActionManager.InvokeBuildStart();
     }
 
     private IEnumerator AnimateCountUp(TextMeshProUGUI textObj, int finalValue, string prefix, string suffix)

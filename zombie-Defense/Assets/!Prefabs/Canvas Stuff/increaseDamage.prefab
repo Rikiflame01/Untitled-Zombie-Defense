@@ -397,6 +397,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardType: 1
   rarity: 1
+  specificCard: 4
 --- !u!1 &6839993107333147867
 GameObject:
   m_ObjectHideFlags: 0

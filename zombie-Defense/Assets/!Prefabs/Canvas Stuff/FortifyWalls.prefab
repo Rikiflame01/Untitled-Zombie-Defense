@@ -65,7 +65,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Heal Player
+  m_text: Increase wall strength + 25
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 24d95bb02cf509e4eb12875b1f39f2f4, type: 2}
   m_sharedMaterial: {fileID: 368726632627818089, guid: 24d95bb02cf509e4eb12875b1f39f2f4, type: 2}
@@ -322,6 +322,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardType: 1
   rarity: 2
+  specificCard: 1
 --- !u!1 &6649845204238409082
 GameObject:
   m_ObjectHideFlags: 0

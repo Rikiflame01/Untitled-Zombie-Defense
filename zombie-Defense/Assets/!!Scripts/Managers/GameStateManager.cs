@@ -4,6 +4,7 @@ public static class GameStateManager
     {
         Defending,
         Building,
+        ChooseCard,
         Paused
     }
 
@@ -18,6 +19,7 @@ public static class GameStateManager
 
     public static bool IsDefending => _currentState == GameState.Defending;
     public static bool IsBuilding  => _currentState == GameState.Building;
+    public static bool IsChoosingCard  => _currentState == GameState.ChooseCard;
     public static bool IsPaused    => _currentState == GameState.Paused;
 
     public static void Initialize()
@@ -27,6 +29,7 @@ public static class GameStateManager
         ActionManager.OnPaused       += HandleGamePaused;
         ActionManager.OnDefenseStart += HandleDefenseStart;
         ActionManager.OnBuildStart   += HandleBuildingStart;
+        ActionManager.OnChooseCard += HandleChooseCard;
 
         _initialized = true;
     }
@@ -47,7 +50,13 @@ public static class GameStateManager
         SetBuilding();
     }
 
+    private static void HandleChooseCard()
+    {
+        SetChooseCard();
+    }
+
     public static void SetDefending() => _currentState = GameState.Defending;
     public static void SetBuilding()  => _currentState = GameState.Building;
     public static void SetPaused()    => _currentState = GameState.Paused;
+    public static void SetChooseCard()    => _currentState = GameState.ChooseCard;
 }

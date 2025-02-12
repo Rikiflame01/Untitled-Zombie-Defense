@@ -533,3 +533,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   cardType: 1
   rarity: 2
+  specificCard: 2

@@ -127,7 +127,8 @@ public class PlayerControls : MonoBehaviour
         if (predictionLine == null)
             return;
         
-        if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
+        if (GameStateManager.CurrentState == GameStateManager.GameState.Building || 
+        GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
         {
             predictionLine.enabled = false;
             return;
@@ -191,7 +192,8 @@ public class PlayerControls : MonoBehaviour
 
     private void OnShoot(InputAction.CallbackContext context)
     {
-        if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
+        if (GameStateManager.CurrentState == GameStateManager.GameState.Building|| 
+        GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
             return;
 
         PlayerReload reload = GetComponent<PlayerReload>();

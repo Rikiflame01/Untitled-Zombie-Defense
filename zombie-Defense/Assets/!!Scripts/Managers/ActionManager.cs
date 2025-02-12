@@ -1,6 +1,7 @@
 using UnityEngine;
 using System;
 using System.Diagnostics;
+using Unity.VisualScripting;
 
 public static class ActionManager
 {
@@ -12,7 +13,26 @@ public static class ActionManager
     public static event Action OnPaused;
     public static event Action OnUnpaused;
 
+    public static event Action OnChooseCard;
+    public static event Action OnChooseCardEnd;
+
+    public static event Action<string> OnCardChosen;
+
     public static event Action OnWallDestroyed;
+
+    public static void InvokeChooseCard()
+    {
+        OnChooseCard?.Invoke();
+    }
+
+    public static void InvokeChooseCardEnd()
+    {
+        OnChooseCardEnd?.Invoke();
+    }
+
+    public static void InvokeCardChosen(string cardChosen){
+        OnCardChosen?.Invoke(cardChosen);
+    }
 
     public static void InvokeWallDestroyed()
     {

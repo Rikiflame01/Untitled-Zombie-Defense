@@ -65,7 +65,7 @@ public class EnemySpawner : MonoBehaviour
         ActionManager.InvokeDefenseStop();
         Debug.Log("Build phase starting...");
         yield return new WaitForSeconds(1f);
-        ActionManager.InvokeBuildStart();
+        ActionManager.InvokeChooseCard();
         isWaveRunning = false;
     }
 
