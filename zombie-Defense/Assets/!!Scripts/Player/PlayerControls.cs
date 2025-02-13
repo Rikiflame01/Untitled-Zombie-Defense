@@ -24,12 +24,16 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private Camera renderTextureCamera;
     [SerializeField] private RenderTexture renderTexture;
 
+    [Header("Rifle Settings")]
+    public bool rifleEnabled = false; 
+    [SerializeField] private float rifleFireRate = 0.1f;  
+    private float nextRifleFireTime = 0f;
+
     private InputSystem_Actions _inputActions;
     private CharacterController _characterController;
     private Vector2 _moveInput;
     [SerializeField] private LayerMask obstacleLayer;
 
-    //VFX
     [SerializeField] private GameObject muzzleFlash;
 
     private void Awake()
@@ -69,6 +73,12 @@ public class PlayerControls : MonoBehaviour
         _characterController.Move(move * (moveSpeed * Time.deltaTime));
 
         UpdateShootingPoint();
+
+        if (rifleEnabled && Mouse.current != null && Mouse.current.leftButton.isPressed && Time.time >= nextRifleFireTime)
+        {
+            nextRifleFireTime = Time.time + rifleFireRate;
+            AttemptShoot();
+        }
     }
 
     private void DisableScript(GameObject obj)
@@ -92,12 +102,10 @@ public class PlayerControls : MonoBehaviour
         Vector3 direction;
         Vector2 mousePos = Mouse.current.position.ReadValue();
 
-        // Convert mouse position from screen space to render texture space
         float scaleX = (float)renderTexture.width / Screen.width;
         float scaleY = (float)renderTexture.height / Screen.height;
         Vector2 renderMousePos = new Vector2(mousePos.x * scaleX, mousePos.y * scaleY);
 
-        // Convert the mouse position in render texture space to a world ray
         Ray ray = renderTextureCamera.ScreenPointToRay(new Vector3(renderMousePos.x, renderMousePos.y, 0));
         RaycastHit hit;
         int groundLayerMask = LayerMask.GetMask("Ground");
@@ -128,7 +136,7 @@ public class PlayerControls : MonoBehaviour
             return;
         
         if (GameStateManager.CurrentState == GameStateManager.GameState.Building || 
-        GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
+            GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
         {
             predictionLine.enabled = false;
             return;
@@ -190,10 +198,10 @@ public class PlayerControls : MonoBehaviour
         predictionLine.SetPositions(trajectoryPoints);
     }
 
-    private void OnShoot(InputAction.CallbackContext context)
+    private void AttemptShoot()
     {
-        if (GameStateManager.CurrentState == GameStateManager.GameState.Building|| 
-        GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
+        if (GameStateManager.CurrentState == GameStateManager.GameState.Building || 
+            GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
             return;
 
         PlayerReload reload = GetComponent<PlayerReload>();
@@ -209,6 +217,10 @@ public class PlayerControls : MonoBehaviour
         Shoot();
     }
 
+    private void OnShoot(InputAction.CallbackContext context)
+    {
+        AttemptShoot();
+    }
 
     private void Shoot()
     {
@@ -218,7 +230,6 @@ public class PlayerControls : MonoBehaviour
             return;
         }
 
-        // Get a bullet from the pool
         GameObject bullet = ObjectPooler.Instance.GetPooledObject(
             bulletPoolTag,
             shootingPoint.position,

@@ -10,6 +10,8 @@ public class GameManager : MonoBehaviour
     public EntityStats playerStats;
     public EntityStats wallStats;
 
+    public bool piercingEnabled = true;
+
     void Start()
     {
         playerStats.damage = 34;
@@ -151,11 +153,20 @@ public class GameManager : MonoBehaviour
     }
 
     private void Piercing(){
+        piercingEnabled = true;
         Debug.Log("Piercing logic executed");
         ActionManager.InvokeChooseCardEnd();
     }
     private void Rifle(){
         Debug.Log("Rifle logic executed");
+        playerStats.damage -= 19;
+
+        GameObject player = GameObject.FindWithTag("Player");
+        PlayerReload playerReload = player.GetComponent<PlayerReload>();
+        PlayerControls playerControls = player.GetComponent<PlayerControls>();
+        playerReload.maxShots += 21; // Rifle - pistol capacity
+        playerControls.rifleEnabled = true;
+
         ActionManager.InvokeChooseCardEnd();
     }
     #endregion
