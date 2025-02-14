@@ -20,5 +20,7 @@ public class EntityStats : ScriptableObject
     public bool isRanged = false;
     public bool isBoss = false;
     
+    [Header("Bullet Upgrades")]
+    public bool isPiercing = false;
     
 }

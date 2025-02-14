@@ -10,13 +10,12 @@ public class GameManager : MonoBehaviour
     public EntityStats playerStats;
     public EntityStats wallStats;
 
-    public bool piercingEnabled = true;
-
     void Start()
     {
         playerStats.damage = 34;
         wallStats.health = 30;
         wallStats.maxHealth = 30;
+        playerStats.isPiercing = false;
         GameStateManager.Initialize();
         StartCoroutine(StartGameCoRoutine());
 
@@ -153,7 +152,7 @@ public class GameManager : MonoBehaviour
     }
 
     private void Piercing(){
-        piercingEnabled = true;
+        playerStats.isPiercing = true;
         Debug.Log("Piercing logic executed");
         ActionManager.InvokeChooseCardEnd();
     }

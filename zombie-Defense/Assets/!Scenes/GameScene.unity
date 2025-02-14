@@ -20031,10 +20031,14 @@ MonoBehaviour:
   predictionTimeStep: 0.1
   renderTextureCamera: {fileID: 330585545}
   renderTexture: {fileID: 8400000, guid: 7fc3042f2c9d3b346b039491e4754919, type: 2}
+  rifleEnabled: 0
+  rifleFireRate: 0.1
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 16384
   muzzleFlash: {fileID: 590348514}
+  playerStats: {fileID: 11400000, guid: 0c16584073903074388becd337a7158f, type: 2}
+  bloodBurstPrefab: {fileID: 308744921247794867, guid: f877ec8f6a568d84eb8231cc21af00f9, type: 3}
 --- !u!4 &6546329059834281961
 Transform:
   m_ObjectHideFlags: 0

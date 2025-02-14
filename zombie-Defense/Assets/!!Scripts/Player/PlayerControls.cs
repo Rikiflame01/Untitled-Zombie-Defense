@@ -29,12 +29,15 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private float rifleFireRate = 0.1f;  
     private float nextRifleFireTime = 0f;
 
+    [SerializeField] private LayerMask obstacleLayer;
+    [SerializeField] private GameObject muzzleFlash;
+
     private InputSystem_Actions _inputActions;
     private CharacterController _characterController;
     private Vector2 _moveInput;
-    [SerializeField] private LayerMask obstacleLayer;
 
-    [SerializeField] private GameObject muzzleFlash;
+    public EntityStats playerStats;
+    [SerializeField] private GameObject bloodBurstPrefab;
 
     private void Awake()
     {
@@ -276,10 +279,61 @@ public class PlayerControls : MonoBehaviour
                 StartCoroutine(DisableLightAfterDelay(flashLight, 0.15f));
             }
         }
+
+        if (playerStats.isPiercing)
+        {
+            Debug.Log("Piercing shot!");
+            StartCoroutine(DoSecondaryPiercingDamage(shootingPoint.position, shootingPoint.forward));
+        }
+        else if (GameManager.Instance == null){
+            Debug.Log("Game Manager is null");
+        }
+
     }
+
     private IEnumerator DisableLightAfterDelay(Light light, float delay)
     {
         yield return new WaitForSeconds(delay);
         light.enabled = false;
     }
+    
+private IEnumerator DoSecondaryPiercingDamage(Vector3 startPosition, Vector3 direction)
+{
+    yield return new WaitForSeconds(0.1f);
+    int enemyLayerMask = LayerMask.GetMask("Enemy");
+    float maxDistance = 40f;
+    Ray ray = new Ray(startPosition, direction);
+    
+    RaycastHit[] hits = Physics.RaycastAll(ray, maxDistance, enemyLayerMask);
+    if (hits != null && hits.Length > 0)
+    {
+        System.Array.Sort(hits, (a, b) => a.distance.CompareTo(b.distance));
+        
+        int damage = playerStats.damage;
+        
+        foreach (RaycastHit hit in hits)
+        {
+            Health health = hit.collider.GetComponent<Health>();
+            if (health != null)
+            {
+                health.TakeDamage(damage);
+                SoundManager.Instance.PlaySFX("bulletHit", 0.7f);
+
+                if (health.currentHealth <= 0)
+                {
+                    Vector3 spawnPosition = hit.point;
+                    GameObject playerObj = GameObject.FindWithTag("Player");
+                    if (playerObj != null)
+                    {
+                        Vector3 directionAwayFromPlayer = (spawnPosition - playerObj.transform.position).normalized;
+                        Quaternion spawnRotation = Quaternion.LookRotation(directionAwayFromPlayer);
+
+                        Instantiate(bloodBurstPrefab, spawnPosition, spawnRotation);
+                    }
+                }
+            }
+        }
+    }
+}
+
 }
