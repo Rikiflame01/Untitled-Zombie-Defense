@@ -139,7 +139,8 @@ public class PlayerControls : MonoBehaviour
             return;
         
         if (GameStateManager.CurrentState == GameStateManager.GameState.Building || 
-            GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
+            GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard|| 
+            GameStateManager.CurrentState == GameStateManager.GameState.MainMenu)
         {
             predictionLine.enabled = false;
             return;
@@ -204,7 +205,8 @@ public class PlayerControls : MonoBehaviour
     private void AttemptShoot()
     {
         if (GameStateManager.CurrentState == GameStateManager.GameState.Building || 
-            GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
+            GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard|| 
+            GameStateManager.CurrentState == GameStateManager.GameState.MainMenu)
             return;
 
         PlayerReload reload = GetComponent<PlayerReload>();

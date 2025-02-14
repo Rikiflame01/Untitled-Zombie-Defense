@@ -17,7 +17,6 @@ public class GameManager : MonoBehaviour
         wallStats.maxHealth = 30;
         playerStats.isPiercing = false;
         GameStateManager.Initialize();
-        StartCoroutine(StartGameCoRoutine());
 
         ActionManager.OnCardChosen += ChosenCard;
     }
@@ -25,6 +24,10 @@ public class GameManager : MonoBehaviour
     void OnDisable()
     {
         ActionManager.OnCardChosen -= ChosenCard;
+    }
+
+    public void StartGame(){
+        StartCoroutine(StartGameCoRoutine());
     }
 
     private IEnumerator StartGameCoRoutine(){

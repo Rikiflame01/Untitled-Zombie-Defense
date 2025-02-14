@@ -2,6 +2,7 @@ public static class GameStateManager
 {
     public enum GameState
     {
+        MainMenu,
         Defending,
         Building,
         ChooseCard,
@@ -9,7 +10,7 @@ public static class GameStateManager
     }
 
     private static bool _initialized;
-    private static GameState _currentState = GameState.Defending;
+    private static GameState _currentState = GameState.MainMenu;
 
     public static GameState CurrentState
     {
@@ -17,6 +18,7 @@ public static class GameStateManager
         set => _currentState = value;
     }
 
+    public static bool IsMainMenu => _currentState == GameState.MainMenu;
     public static bool IsDefending => _currentState == GameState.Defending;
     public static bool IsBuilding  => _currentState == GameState.Building;
     public static bool IsChoosingCard  => _currentState == GameState.ChooseCard;
