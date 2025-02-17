@@ -70,7 +70,7 @@ public class GridCubePlacer : MonoBehaviour
         if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
         {
             UpdatePreviewPosition();
-            if (Keyboard.current.spaceKey.wasPressedThisFrame)
+            if (Keyboard.current.tKey.wasPressedThisFrame)
                 TogglePlacement();
         }
         else if (previewInstance != null)
