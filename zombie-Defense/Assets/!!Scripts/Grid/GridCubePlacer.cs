@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using TMPro;
 
 public class GridCubePlacer : MonoBehaviour
 {
@@ -26,6 +27,9 @@ public class GridCubePlacer : MonoBehaviour
     public Camera mainCamera;
     public Camera renderTextureCamera;
     public RenderTexture renderTexture;
+
+    public TMP_Text buildModeInstructionsText;
+    public GameObject buildModePanel;
 
     private InputAction clickAction;
     private GameObject previewInstance;
@@ -69,14 +73,35 @@ public class GridCubePlacer : MonoBehaviour
     {
         if (GameStateManager.CurrentState == GameStateManager.GameState.Building)
         {
+            UpdateBuildModeUI();
             UpdatePreviewPosition();
             if (Keyboard.current.tKey.wasPressedThisFrame)
                 TogglePlacement();
         }
-        else if (previewInstance != null)
+        else
         {
-            previewInstance.SetActive(false);
+            if (previewInstance != null)
+                previewInstance.SetActive(false);
+
+            if (buildModePanel != null && buildModePanel.activeSelf)
+                buildModePanel.SetActive(false);
         }
+    }
+
+    private void UpdateBuildModeUI()
+    {
+        if (buildModePanel == null || buildModeInstructionsText == null)
+            return;
+
+        if (!buildModePanel.activeSelf)
+            buildModePanel.SetActive(true);
+
+        string instruction = "BUILDING MODE ACTIVE\n";
+        instruction += "Press 'T' to swap placement\n";
+        instruction += $"Currently Selected: {currentPlacement}\n";
+        instruction += (currentPlacement == PlacementType.Landmine) ? "Cost: 3" : "Cost: 1";
+
+        buildModeInstructionsText.text = instruction;
     }
 
     private void TogglePlacement()
