@@ -36,7 +36,7 @@ public class CardSpawner : MonoBehaviour
     void OnEnable()
     {
         ActionManager.OnChooseCard += SpawnCards;
-        ActionManager.OnChooseCardEnd +=RemoveCards;
+        ActionManager.OnChooseCardEnd += RemoveCards;
     }
 
     void OnDisable()
@@ -59,50 +59,64 @@ public class CardSpawner : MonoBehaviour
         for (int i = 0; i < totalCards; i++)
         {
             GameObject selectedPrefab = null;
-
+            CardData chosenCardData = null;
+            
             if (i == upgradeSlotIndex)
             {
                 float roll = UnityEngine.Random.value;
-                CardData chosenCardData = null;
-
                 if (roll < standardChance)
                 {
-                    chosenCardData = GetRandomCardData(standardUpgradeCardData);
+                    chosenCardData = GetFilteredCardData(standardUpgradeCardData);
                 }
                 else if (roll < standardChance + utilityChance)
                 {
-                    chosenCardData = GetRandomCardData(utilityUpgradeCardData);
+                    chosenCardData = GetFilteredCardData(utilityUpgradeCardData);
+                    if (chosenCardData == null)
+                    {
+                        chosenCardData = GetFilteredCardData(standardUpgradeCardData);
+                    }
                 }
                 else
                 {
-                    chosenCardData = GetRandomCardData(rareUpgradeCardData);
+                    chosenCardData = GetFilteredCardData(rareUpgradeCardData);
                 }
-
+                
                 if (chosenCardData == null)
                 {
-                    chosenCardData = GetRandomCardData(utilityUpgradeCardData);
-                }
-
-                if (chosenCardData != null)
-                {
-                    selectedPrefab = chosenCardData.prefab;
-                    chosenCardData.currentSpawns++;
+                    chosenCardData = GetRandomCardData(emptyCardData);
                 }
             }
             else
             {
-                CardData chosenCardData = GetRandomCardData(emptyCardData);
-                if (chosenCardData != null)
+                float roll = UnityEngine.Random.value;
+                if (roll < standardChance)
                 {
-                    selectedPrefab = chosenCardData.prefab;
-                    chosenCardData.currentSpawns++;
+                    chosenCardData = GetFilteredCardData(standardUpgradeCardData);
                 }
+                else if (roll < standardChance + utilityChance)
+                {
+                    chosenCardData = GetFilteredCardData(utilityUpgradeCardData);
+                }
+                else
+                {
+                    chosenCardData = GetFilteredCardData(rareUpgradeCardData);
+                }
+                
+                if (chosenCardData == null)
+                {
+                    chosenCardData = GetRandomCardData(emptyCardData);
+                }
+            }
+
+            if (chosenCardData != null)
+            {
+                selectedPrefab = chosenCardData.prefab;
+                chosenCardData.currentSpawns++;
             }
 
             if (selectedPrefab != null)
             {
                 GameObject newCard = Instantiate(selectedPrefab, cardParent);
-
                 Vector2 targetPosUI = startPos + new Vector2(i * spacing, 0);
                 Vector3 targetPosWorld = new Vector3(i * spacing, 0, 0);
 
@@ -118,8 +132,8 @@ public class CardSpawner : MonoBehaviour
                 {
                     newCard.transform.position = targetPosWorld + new Vector3(-slideInOffset, 0, 0);
                     newCard.transform.DOMove(targetPosWorld, slideInDuration)
-                           .SetEase(Ease.OutQuad)
-                           .SetDelay(i * slideInDelayBetweenCards);
+                        .SetEase(Ease.OutQuad)
+                        .SetDelay(i * slideInDelayBetweenCards);
                 }
             }
         }
@@ -150,6 +164,91 @@ public class CardSpawner : MonoBehaviour
                   .OnComplete(() => Destroy(card.gameObject));
             }
         }
+    }
+
+    private CardData GetFilteredCardData(CardData[] cardDataArray)
+    {
+        if (cardDataArray == null || cardDataArray.Length == 0)
+        {
+            Debug.LogWarning("Card data array is empty!");
+            return null;
+        }
+        List<CardData> availableCards = new List<CardData>();
+        foreach (CardData data in cardDataArray)
+        {
+            if (data != null && data.prefab != null)
+            {
+                if (data.maxSpawns == CardData.INFINITE_SPAWNS || data.currentSpawns < data.maxSpawns)
+                {
+                    Card card = data.prefab.GetComponent<Card>();
+                    bool valid = true;
+                    if (card != null)
+                    {
+                        switch (card.specificCard)
+                        {
+                            case SpecificCard.HealPlayer:
+                                valid = IsPlayerHealingCardValid();
+                                break;
+                            case SpecificCard.RepairWalls:
+                                valid = IsRepairWallsCardValid();
+                                break;
+                            case SpecificCard.FortifyWalls:
+                                valid = IsFortifyWallsCardValid();
+                                break;
+                            default:
+                                valid = true;
+                                break;
+                        }
+                    }
+                    if (valid)
+                        availableCards.Add(data);
+                }
+            }
+        }
+        if (availableCards.Count == 0)
+            return null;
+        int index = UnityEngine.Random.Range(0, availableCards.Count);
+        return availableCards[index];
+    }
+
+    private bool IsPlayerHealingCardValid()
+    {
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            Health playerHealth = player.GetComponent<Health>();
+            if (playerHealth != null)
+            {
+                return playerHealth.CurrentHealth < 70;
+            }
+        }
+        return false;
+    }
+
+    private bool IsRepairWallsCardValid()
+    {
+        GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
+        if (walls.Length == 0)
+            return false;
+
+        int damagedCount = 0;
+        foreach (GameObject wall in walls)
+        {
+            Health wallHealth = wall.GetComponent<Health>();
+            if (wallHealth != null)
+            {
+                if (wallHealth.CurrentHealth < wallHealth.MaxHealth * 0.5f)
+                    damagedCount++;
+            }
+        }
+        float ratio = (float)damagedCount / walls.Length;
+        return ratio > 0.4f;
+    }
+
+    private bool IsFortifyWallsCardValid()
+    {
+        GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
+        return walls.Length > 0;
     }
 
     private CardData GetRandomCardData(CardData[] cardDataArray)
