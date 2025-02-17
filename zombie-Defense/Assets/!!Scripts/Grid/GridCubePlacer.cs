@@ -99,7 +99,7 @@ public class GridCubePlacer : MonoBehaviour
         string instruction = "BUILDING MODE ACTIVE\n";
         instruction += "Press 'T' to swap placement\n";
         instruction += $"Currently Selected: {currentPlacement}\n";
-        instruction += (currentPlacement == PlacementType.Landmine) ? "Cost: 3" : "Cost: 1";
+        instruction += (currentPlacement == PlacementType.Landmine) ? "Cost: 5" : "Cost: 1";
 
         buildModeInstructionsText.text = instruction;
     }
@@ -220,7 +220,7 @@ public class GridCubePlacer : MonoBehaviour
             return;
         if (occupiedCells[cellX, cellZ])
             return;
-        int cost = (currentPlacement == PlacementType.Landmine) ? 3 : 1;
+        int cost = (currentPlacement == PlacementType.Landmine) ? 5 : 1;
         if (ScoreManager.Instance.totalScore < cost)
             return;
         float centerX = gridOrigin.x + (cellX + 0.5f) * cellSize;

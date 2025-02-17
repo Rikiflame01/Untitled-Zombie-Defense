@@ -59,7 +59,7 @@ public class Health : MonoBehaviour, IHealth
         if (damage <= 0 || entityStats == null || IsDead == true) return;
 
         if(entityStats.isPlayer == true){
-            CameraShake.Instance.ShakeCamera();
+            CameraShake.Instance.ShakeCamera(0.2f,0.3f);
             SoundManager.Instance.PlaySFXWithPitch("playerHurt", 1f, 0.8f);
         }
         currentHealth -= damage;
@@ -115,6 +115,7 @@ public class Health : MonoBehaviour, IHealth
         if (gameObject.layer == LayerMask.NameToLayer("Enemy")){
         ScoreManager.Instance.OnEnemyDeath(gameObject);
         SoundManager.Instance.PlaySFX("zombieDeath", 2f);
+        CameraShake.Instance.ShakeCamera(0.2f,0.1f);
         int randomValue = UnityEngine.Random.Range(1, 101);
         if (randomValue > 66){
             SoundManager.Instance.PlaySFX("zombieDeath2", 2f);

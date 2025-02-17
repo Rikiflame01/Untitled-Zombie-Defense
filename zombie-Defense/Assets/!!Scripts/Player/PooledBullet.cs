@@ -1,20 +1,30 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(Rigidbody))]
 public class PooledBullet : MonoBehaviour
 {
     public EntityStats playerStats;
+    public float knockbackForce = 5f;
+    public float knockbackDuration = 0.2f;
     private Rigidbody rb;
     
     [SerializeField] private GameObject bloodBurstPrefab;
     
     private bool hitTarget = false;
+    private Vector3 lastVelocity;
 
     private void OnEnable()
     {
         rb = GetComponent<Rigidbody>();
         StartCoroutine(DespawnBullet());
+    }
+    
+    private void FixedUpdate()
+    {
+        if(rb != null)
+            lastVelocity = rb.linearVelocity;
     }
 
     private IEnumerator DespawnBullet()
@@ -34,6 +44,22 @@ public class PooledBullet : MonoBehaviour
                 health.TakeDamage(playerStats.damage);
                 SoundManager.Instance.PlaySFX("bulletHit", 0.7f);
 
+                Vector3 knockbackDirection = lastVelocity.normalized;
+                
+                BaseMeleeEnemy enemyAI = collision.gameObject.GetComponent<BaseMeleeEnemy>();
+                if (enemyAI != null)
+                {
+                    enemyAI.StartCoroutine(enemyAI.ApplyKnockback(knockbackDirection, knockbackForce, knockbackDuration));
+                }
+                else
+                {
+                    Rigidbody enemyRb = collision.gameObject.GetComponent<Rigidbody>();
+                    if (enemyRb != null)
+                    {
+                        enemyRb.AddForce(knockbackDirection * knockbackForce, ForceMode.Impulse);
+                    }
+                }
+                
                 if (health.currentHealth <= 0)
                 {
                     ContactPoint contact = collision.contacts[0];
@@ -43,9 +69,7 @@ public class PooledBullet : MonoBehaviour
                     if (playerObj != null)
                     {
                         Vector3 directionAwayFromPlayer = (spawnPosition - playerObj.transform.position).normalized;
-                        
                         Quaternion spawnRotation = Quaternion.LookRotation(directionAwayFromPlayer);
-                        
                         Instantiate(bloodBurstPrefab, spawnPosition, spawnRotation);
                     }
                     else
@@ -54,7 +78,6 @@ public class PooledBullet : MonoBehaviour
                     }
                 }
             }
-            StopAllCoroutines();
             ReturnToPool();
         }
         else if (!hitTarget && gameObject.activeSelf)

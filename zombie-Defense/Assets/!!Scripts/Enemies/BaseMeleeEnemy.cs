@@ -456,4 +456,37 @@ private void UpdateAttackObstacle()
         Gizmos.color = Color.magenta;
         Gizmos.DrawLine(lastRayOrigin, lastRayOrigin + lastRayDirection * destructibleCheckDistance);
     }
+
+    public IEnumerator ApplyKnockback(Vector3 knockbackDirection, float knockbackForce, float knockbackDuration)
+{
+    this.enabled = false;
+    NavMeshAgent agent = GetComponent<NavMeshAgent>();
+    if (agent != null)
+    {
+        agent.isStopped = true;
+        agent.enabled = false;
+    }
+
+    Vector3 startPos = transform.position;
+    Vector3 targetPos = startPos + knockbackDirection * knockbackForce;
+    float elapsed = 0f;
+
+    while (elapsed < knockbackDuration)
+    {
+        transform.position = Vector3.Lerp(startPos, targetPos, elapsed / knockbackDuration);
+        elapsed += Time.deltaTime;
+        yield return null;
+    }
+    transform.position = targetPos;
+
+    if (agent != null)
+    {
+        agent.enabled = true;
+        agent.Warp(targetPos);
+        agent.isStopped = false;
+    }
+    
+    this.enabled = true;
+}
+
 }
