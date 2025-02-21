@@ -32,6 +32,9 @@ public class CardSpawner : MonoBehaviour
     public float slideInDuration = 0.5f;
     public float slideInDelayBetweenCards = 0.1f;
     public float slideInOffset = 300f;
+    public float slideOutDuration = 0.5f;
+
+    private GameObject chosenCard = null;
 
     void OnEnable()
     {
@@ -52,6 +55,7 @@ public class CardSpawner : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+        chosenCard = null;
 
         int upgradeSlotIndex = UnityEngine.Random.Range(0, totalCards);
         Vector2 startPos = Vector2.zero;
@@ -111,12 +115,14 @@ public class CardSpawner : MonoBehaviour
             if (chosenCardData != null)
             {
                 selectedPrefab = chosenCardData.prefab;
-                chosenCardData.currentSpawns++;
             }
 
             if (selectedPrefab != null)
             {
                 GameObject newCard = Instantiate(selectedPrefab, cardParent);
+                CardInstance instance = newCard.AddComponent<CardInstance>();
+                instance.cardData = chosenCardData;
+                
                 Vector2 targetPosUI = startPos + new Vector2(i * spacing, 0);
                 Vector3 targetPosWorld = new Vector3(i * spacing, 0, 0);
 
@@ -139,13 +145,27 @@ public class CardSpawner : MonoBehaviour
         }
     }
 
+    public void OnCardSelected(GameObject selectedCard)
+    {
+        chosenCard = selectedCard;
+        CardInstance instance = selectedCard.GetComponent<CardInstance>();
+        if (instance != null && instance.cardData != null)
+        {
+            instance.cardData.currentSpawns++;
+        }
+        RemoveCards();
+    }
+
     [ContextMenu("Remove Cards")]
     public void RemoveCards()
     {
         List<Transform> cardsToRemove = new List<Transform>();
         foreach (Transform child in cardParent)
         {
-            cardsToRemove.Add(child);
+            if (child.gameObject != chosenCard)
+            {
+                cardsToRemove.Add(child);
+            }
         }
 
         foreach (Transform card in cardsToRemove)
@@ -153,13 +173,13 @@ public class CardSpawner : MonoBehaviour
             RectTransform rt = card.GetComponent<RectTransform>();
             if (rt != null)
             {
-                rt.DOAnchorPos(rt.anchoredPosition + new Vector2(-slideInOffset, 0), slideInDuration)
+                rt.DOAnchorPos(rt.anchoredPosition + new Vector2(-slideInOffset, 0), slideOutDuration)
                   .SetEase(Ease.InQuad)
                   .OnComplete(() => Destroy(card.gameObject));
             }
             else
             {
-                card.transform.DOMove(card.transform.position + new Vector3(-slideInOffset, 0, 0), slideInDuration)
+                card.transform.DOMove(card.transform.position + new Vector3(-slideInOffset, 0, 0), slideOutDuration)
                   .SetEase(Ease.InQuad)
                   .OnComplete(() => Destroy(card.gameObject));
             }
@@ -211,6 +231,33 @@ public class CardSpawner : MonoBehaviour
         return availableCards[index];
     }
 
+    private CardData GetRandomCardData(CardData[] cardDataArray)
+    {
+        if (cardDataArray == null || cardDataArray.Length == 0)
+        {
+            Debug.LogWarning("Card data array is empty!");
+            return null;
+        }
+
+        List<CardData> availableCards = new List<CardData>();
+        foreach (CardData data in cardDataArray)
+        {
+            if (data != null && data.prefab != null)
+            {
+                if (data.maxSpawns == CardData.INFINITE_SPAWNS || data.currentSpawns < data.maxSpawns)
+                {
+                    availableCards.Add(data);
+                }
+            }
+        }
+
+        if (availableCards.Count == 0)
+            return null;
+
+        int index = UnityEngine.Random.Range(0, availableCards.Count);
+        return availableCards[index];
+    }
+
     private bool IsPlayerHealingCardValid()
     {
         GameObject player = GameObject.FindWithTag("Player");
@@ -249,32 +296,5 @@ public class CardSpawner : MonoBehaviour
     {
         GameObject[] walls = GameObject.FindGameObjectsWithTag("Wall");
         return walls.Length > 0;
-    }
-
-    private CardData GetRandomCardData(CardData[] cardDataArray)
-    {
-        if (cardDataArray == null || cardDataArray.Length == 0)
-        {
-            Debug.LogWarning("Card data array is empty!");
-            return null;
-        }
-
-        List<CardData> availableCards = new List<CardData>();
-        foreach (CardData data in cardDataArray)
-        {
-            if (data != null && data.prefab != null)
-            {
-                if (data.maxSpawns == CardData.INFINITE_SPAWNS || data.currentSpawns < data.maxSpawns)
-                {
-                    availableCards.Add(data);
-                }
-            }
-        }
-
-        if (availableCards.Count == 0)
-            return null;
-
-        int index = UnityEngine.Random.Range(0, availableCards.Count);
-        return availableCards[index];
     }
 }
