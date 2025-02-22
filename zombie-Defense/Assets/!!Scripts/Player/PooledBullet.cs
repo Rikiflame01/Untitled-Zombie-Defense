@@ -11,7 +11,8 @@ public class PooledBullet : MonoBehaviour
     private Rigidbody rb;
     
     [SerializeField] private GameObject bloodBurstPrefab;
-    
+    public GameObject bulletHitVFX;
+
     private bool hitTarget = false;
     private Vector3 lastVelocity;
 
@@ -35,6 +36,7 @@ public class PooledBullet : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+        Instantiate(bulletHitVFX, transform.position, transform.rotation);
         if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy"))
         {
             hitTarget = true;

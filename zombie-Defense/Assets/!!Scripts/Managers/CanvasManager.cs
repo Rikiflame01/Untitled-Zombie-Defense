@@ -28,6 +28,8 @@ public class CanvasManager : MonoBehaviour
             Health playerHealth = player.GetComponent<Health>();
             if (playerHealth != null)
             {
+                Rigidbody rigidbody = player.GetComponent<Rigidbody>();
+                rigidbody.constraints = RigidbodyConstraints.FreezeAll;
                 playerHealth.OnDied += EnableDeathCanvas;
             }
             else

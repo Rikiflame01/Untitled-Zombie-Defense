@@ -61,6 +61,7 @@ public class Health : MonoBehaviour, IHealth
         if(entityStats.isPlayer == true){
             CameraShake.Instance.ShakeCamera(0.2f,0.3f);
             SoundManager.Instance.PlaySFXWithPitch("playerHurt", 1f, 0.8f);
+            ActionManager.PlayerDamaged();
         }
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0, MaxHealth);

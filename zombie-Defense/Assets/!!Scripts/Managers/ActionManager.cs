@@ -20,9 +20,16 @@ public static class ActionManager
 
     public static event Action OnWallDestroyed;
 
+    public static event Action OnPlayerDamaged;
+
     public static void InvokeChooseCard()
     {
         OnChooseCard?.Invoke();
+    }
+
+    public static void PlayerDamaged()
+    {
+        OnPlayerDamaged?.Invoke();
     }
 
     public static void InvokeChooseCardEnd()
