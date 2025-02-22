@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -5,7 +6,6 @@ using UnityEngine.SceneManagement;
 public class GameManager : MonoBehaviour
 {
     public static GameManager Instance;
-
 
     public EntityStats playerStats;
     public EntityStats wallStats;
@@ -19,11 +19,35 @@ public class GameManager : MonoBehaviour
         GameStateManager.Initialize();
 
         ActionManager.OnCardChosen += ChosenCard;
+        ActionManager.OnDefenseStart += DisableCurser;
+        ActionManager.OnBuildStart += DisableCurser;
+        ActionManager.OnPlayerDied += EnableCurser;
+    }
+
+    private void DisableCurser()
+    {
+        Cursor.visible = false;
+    }
+    private void EnableCurser()
+    {
+        Cursor.visible = true;
+    }
+
+    private void Update()
+    {
+        if (GameStateManager.CurrentState == GameStateManager.GameState.MainMenu || GameStateManager.CurrentState == GameStateManager.GameState.ChooseCard)
+        {
+            Cursor.visible = true;
+        }
+
     }
 
     void OnDisable()
     {
         ActionManager.OnCardChosen -= ChosenCard;
+        ActionManager.OnDefenseStart -= DisableCurser;
+        ActionManager.OnBuildStart -= DisableCurser;
+        ActionManager.OnPlayerDied -= EnableCurser;
     }
 
     public void StartGame(){

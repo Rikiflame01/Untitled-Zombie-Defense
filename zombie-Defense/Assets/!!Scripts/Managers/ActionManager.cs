@@ -22,9 +22,15 @@ public static class ActionManager
 
     public static event Action OnPlayerDamaged;
 
+    public static event Action OnPlayerDied;
+
     public static void InvokeChooseCard()
     {
         OnChooseCard?.Invoke();
+    }
+    public static void PlayerDied()
+    {
+        OnPlayerDied?.Invoke();
     }
 
     public static void PlayerDamaged()

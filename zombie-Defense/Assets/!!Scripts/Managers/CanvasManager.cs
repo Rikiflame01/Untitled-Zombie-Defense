@@ -67,7 +67,9 @@ public class CanvasManager : MonoBehaviour
     {
         if (obj.CompareTag("Player"))
         {
+            Cursor.visible = true;
             SoundManager.Instance.PlaySFX("playerDeath", 2f);
+            ActionManager.PlayerDied();
             if(endGameCanvas != null)
                 endGameCanvas.SetActive(true);
         }
