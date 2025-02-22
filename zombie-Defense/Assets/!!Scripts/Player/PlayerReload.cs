@@ -1,4 +1,5 @@
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -14,6 +15,8 @@ public class PlayerReload : MonoBehaviour
     [Header("Reload Settings")]
     [Tooltip("Number of shots allowed before reload.")]
     [SerializeField] public int maxShots = 9;
+
+    public TextMeshProUGUI bulletCount;
     
     [Tooltip("Time (in seconds) required to reload.")]
     [SerializeField] private float reloadTime = 2f;
@@ -29,6 +32,11 @@ public class PlayerReload : MonoBehaviour
     private bool isReloading = false;
     private bool isPulsing = false;
 
+    private void FixedUpdate()
+    {
+        UpdateShotsCanvas();
+    }
+
     private void Start()
     {
         if (radialSlider != null)
@@ -36,6 +44,26 @@ public class PlayerReload : MonoBehaviour
         
         if (reloadingIndicator != null)
             reloadingIndicator.SetActive(false);
+    }
+
+    private void UpdateShotsCanvas()
+    {
+        bulletCount.text = (maxShots - shotsFired).ToString();
+    }
+
+    public void Reload()
+    {
+        if (shotsFired < maxShots && shotsFired != 0 && isReloading != true)
+        {
+            StartCoroutine(ReloadRoutine());
+        }
+        else { return; }
+        if (isReloading)
+        {
+            if (reloadingIndicator != null && !isPulsing)
+                StartCoroutine(PulseIndicator());
+            return;
+        }
     }
 
     public bool TryShoot()
@@ -50,7 +78,7 @@ public class PlayerReload : MonoBehaviour
         if (shotsFired < maxShots)
         {
             shotsFired++;
-
+            UpdateShotsCanvas();
             if (shotsFired >= maxShots)
             {
                 StartCoroutine(ReloadRoutine());

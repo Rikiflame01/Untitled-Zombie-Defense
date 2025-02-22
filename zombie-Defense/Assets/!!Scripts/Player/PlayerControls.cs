@@ -39,8 +39,11 @@ public class PlayerControls : MonoBehaviour
     public EntityStats playerStats;
     [SerializeField] private GameObject bloodBurstPrefab;
 
+    private PlayerReload reload;
+
     private void Awake()
     {
+        reload = GetComponent<PlayerReload>();
         _inputActions = new InputSystem_Actions();
         _characterController = GetComponent<CharacterController>();
     }
@@ -53,6 +56,7 @@ public class PlayerControls : MonoBehaviour
         _inputActions.Player.Move.performed += OnMove;
         _inputActions.Player.Move.canceled += OnMove;
         _inputActions.Player.Shoot.performed += OnShoot;
+        _inputActions.Player.Reload.performed += AttemptReload;
         _inputActions.Player.SkipBuild.performed += SkipBuildEarly;
     }
 
@@ -95,6 +99,11 @@ public class PlayerControls : MonoBehaviour
     private void SkipBuildEarly(InputAction.CallbackContext context)
     {
         ActionManager.InvokeBuildSkip();
+    }
+
+    private void AttemptReload(InputAction.CallbackContext context)
+    {
+        reload.Reload();
     }
     
     private void UpdateShootingPoint()
@@ -209,7 +218,6 @@ public class PlayerControls : MonoBehaviour
             GameStateManager.CurrentState == GameStateManager.GameState.MainMenu)
             return;
 
-        PlayerReload reload = GetComponent<PlayerReload>();
         if (reload != null)
         {
             if (!reload.TryShoot())
