@@ -4,7 +4,7 @@ using UnityEngine;
 public class EnemySpawner : MonoBehaviour
 {
     [Header("Spawn Settings")]
-    public GameObject enemyPrefab;
+    public GameObject[] enemyPrefabs;
     public GameObject groundObject;
     
     [Tooltip("Initial number of enemies per wave.")]
@@ -96,8 +96,24 @@ public class EnemySpawner : MonoBehaviour
             Debug.LogWarning("No valid spawn position found on the ground perimeter.");
             return;
         }
-        
-        GameObject enemy = Instantiate(enemyPrefab, spawnPos, Quaternion.identity);
+        int randomNumber = UnityEngine.Random.Range(0, enemyPrefabs.Length);
+
+        //int randomNumber = 0;
+        //if (waveCount >=3)
+        //{
+        //    randomNumber = UnityEngine.Random.Range(0, 1);
+        //}
+        //if (waveCount >= 5)
+        //{
+        //    randomNumber = UnityEngine.Random.Range(0, 2);
+        //}
+        //if (waveCount >= 7)
+        //{
+        //    randomNumber = UnityEngine.Random.Range(0, enemyPrefabs.Length);
+        //}
+
+
+        GameObject enemy = Instantiate(enemyPrefabs[randomNumber], spawnPos, Quaternion.identity);
         
         Health enemyHealth = enemy.GetComponent<Health>();
         if (enemyHealth != null)
